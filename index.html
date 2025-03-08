@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LLM Backend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #prompt {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        #response-container {
+            margin-top: 20px;
+        }
+        #response {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        select, label {
+            margin: 5px 0;
+        }
+        #download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        #download-link:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Test LLM Backend</h2>
+        <label for="llm">Select LLM:</label>
+        <select id="llm">
+            <option value="gpt">GPT</option>
+            <option value="gemini">Gemini</option>
+            <option value="codellama">CodeLlama</option>
+        </select>
+        <br><br>
+        <label for="prompt">Enter Prompt:</label>
+        <textarea id="prompt" rows="4"></textarea>
+        <br><br>
+        <button onclick="sendRequest()">Generate</button>
+        <div id="response-container">
+            <h3>Response:</h3>
+            <pre id="response"></pre>
+        </div>
+        <br>
+        <a id="download-link" style="display:none;" download>Download Generated Zip</a>
+    </div>
+    <script>
+        function sendRequest() {
+            const selectedLLM = document.getElementById('llm').value;
+            const userPrompt = document.getElementById('prompt').value;
+            const requestBody = { llm: selectedLLM, prompt: userPrompt };
+            
+            document.getElementById('response').textContent = "Loading...";
+            
+            fetch('http://localhost:5000/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+                if (data.zipFile) {
+                    const downloadLink = document.getElementById('download-link');
+                    downloadLink.href = `http://localhost:5000/${data.zipFile}`;
+                    downloadLink.style.display = 'block';
+                    downloadLink.textContent = 'Download Generated Zip';
+                } else {
+                    document.getElementById('download-link').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                document.getElementById('response').textContent = "Error: " + error;
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

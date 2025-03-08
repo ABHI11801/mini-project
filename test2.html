@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webpage Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --background-gradient: linear-gradient(135deg, #6a11cb, #2575fc);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--background-gradient);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.1);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .maincontainer{
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 90%;
+            height: 70%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar {
+            width: 80px;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            transition: width 0.3s ease;
+            position: relative;
+            z-index: 10;
+            color: #333;
+        }
+        .sidebar.expanded {
+            width: 250px;
+        }
+        .calvin{
+            padding-right: 40%;
+            font-family: "Sigmar", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 5vw;
+        }
+        .profile-section {
+            display: flex;
+            flex-direction: row;
+            align-items: right;
+            justify-content: end;
+            width: 100%;
+            padding: 20px 10px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 40px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .menu-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            z-index: 20;
+        }
+        .menu-toggle .bar {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 5px 0;
+            transition: 0.4s;
+        }
+        .sidebar-settings {
+            width: 100%;
+            display: none;
+            padding: 0 15px;
+        }
+        .sidebar.expanded .sidebar-settings {
+            display: block;
+        }
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .settings-item:hover {
+            background: #e0e0e0;
+        }
+        .settings-item i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        .left-section {
+            width: 30%;
+            background: #f9f9f9;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            color: #2575fc;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 13px;
+            padding: 3px;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        .right-section {
+            width: 70%;
+            padding: 20px;
+            position: relative;
+        }
+        .prompt-container {
+            display: flex;
+            position: relative;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 20px;
+            align-items: flex-start;
+        }
+        .prompt-box {
+            min-width: 300px;
+            background: #f1f1f1;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .prompt-box .title-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .prompt-box textarea {
+            width: 100%;
+            min-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 8px;
+            resize: vertical;
+        }
+        .file-upload-label {
+            display: block;
+            margin-top: 10px;
+            background: #f0f0f0;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            color: #333;
+        }
+        .file-upload-label input[type="file"] {
+            display: none;
+        }
+        .file-name {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: red;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .add-btn-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+        }
+        .add-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .add-btn:hover {
+            transform: rotate(90deg);
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .buttons button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="maincontainer">
+    <div class="background-overlay"></div>
+    <div class="profile-section">
+        <div class="calvin">
+            <h5>Clavin</h5>
+        </div>
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="menu-toggle" onclick="toggleSidebar()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <div class="sidebar-settings">
+                <div class="settings-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="settings-item">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
+                </div>
+                <div class="settings-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </div>
+                <div class="settings-item">
+                    <i class="fas fa-power-off"></i>
+                    <span>Logout</span>
+                </div>
+            </div>
+        </div>
+        <div class="left-section">
+            <label for="llm-selection"><b>Select LLM:</b></label>
+            <select id="llm-selection">
+                <option value="openai">🔹 OpenAI</option>
+                <option value="gemini">✨ Gemini</option>
+                <option value="custom">⚙️ Custom Model</option>
+            </select>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+            <label><b> </b></label>
+
+
+            <label><b>STATUS</b></label>
+            <div class="progress-container">
+                <div class="progress-bar" id="generation-progress"></div>
+            </div>
+        </div>
+        <div class="right-section">
+            <h2>Webpage Generator</h2>
+            <div class="prompt-container" id="prompt-container">
+                <div class="prompt-box">
+                    <input type="text" class="title-input" placeholder="Enter page title">
+                    <textarea placeholder="Enter page content"></textarea>
+                    <label class="file-upload-label">
+                        <input type="file" class="file-input">
+                        <span>Upload File</span>
+                    </label>
+                    <div class="file-name"></div>
+                </div>
+                <div class="add-btn-container">
+                    <button class="add-btn" onclick="addPrompt()">+</button>
+                </div>
+            </div>
+            <div class="buttons">
+                <button onclick="startGeneration()">Generate</button>
+                <button>Preview</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('expanded');
+        }
+
+        function addPrompt() {
+            const container = document.getElementById("prompt-container");
+            const addBtnContainer = container.querySelector('.add-btn-container');
+            
+            const promptBox = document.createElement("div");
+            promptBox.className = "prompt-box";
+            promptBox.innerHTML = `
+                <input type="text" class="title-input" placeholder="Enter page title">
+                <textarea placeholder="Enter page content"></textarea>
+                <label class="file-upload-label">
+                    <input type="file" class="file-input">
+                    <span>Upload File</span>
+                </label>
+                <div class="file-name"></div>
+                <button class="remove-btn" onclick="removePrompt(this)">✖</button>
+            `;
+            
+            const fileInput = promptBox.querySelector('.file-input');
+            const fileName = promptBox.querySelector('.file-name');
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileName.textContent = this.files[0].name;
+                }
+            });
+            
+            container.insertBefore(promptBox, addBtnContainer);
+        }
+
+        function removePrompt(button) {
+            const container = document.getElementById("prompt-container");
+            const promptBoxes = container.querySelectorAll('.prompt-box');
+            
+            if (promptBoxes.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        function startGeneration() {
+            const progressBar = document.getElementById('generation-progress');
+            progressBar.style.width = '0%';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        alert('Generation completed!');
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialFileInput = document.querySelector('.prompt-container .file-input');
+            const initialFileName = document.querySelector('.prompt-container .file-name');
+            
+            initialFileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    initialFileName.textContent = this.files[0].name;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
