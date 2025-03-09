@@ -36,7 +36,8 @@ const getRequestBody = (llm, prompt) => {
 
 app.post("/generate", async (req, res) => {
     try {
-        const { llm, prompt } = req.body;
+        let { llm, prompt } = req.body;
+        prompt += "use html css js and flask if necessary to generate the code in the order, avoid all explanation except code,noooo comments or sentences and just provide a filename as label before each code file and provide a snippet of routing statements";
         const apiKey = getApiKey(llm);
         let apiEndpoint = getApiEndpoint(llm);
         const requestBody = getRequestBody(llm, prompt);
