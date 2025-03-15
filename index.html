@@ -96,14 +96,7 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('response').textContent = JSON.stringify(data, null, 2);
-                if (data.zipFile) {
-                    const downloadLink = document.getElementById('download-link');
-                    downloadLink.href = `http://localhost:5000/${data.zipFile}`;
-                    downloadLink.style.display = 'block';
-                    downloadLink.textContent = 'Download Generated Zip';
-                } else {
-                    document.getElementById('download-link').style.display = 'none';
-                }
+                
             })
             .catch(error => {
                 document.getElementById('response').textContent = "Error: " + error;

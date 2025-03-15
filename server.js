@@ -2,6 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const { spawn } = require('child_process');
+const path = require("path");
+const fs = require("fs");
+const JSZip = require("jszip");
+const multer = require('multer');
+
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,14 +40,21 @@ const getRequestBody = (llm, prompt) => {
         codellama: { prompt, temperature: 0.7 },
     }[llm];
 };
-
+data=""
 app.post("/generate", async (req, res) => {
     try {
-        let { llm, prompt } = req.body;
-        prompt += "use html css js and flask if necessary to generate the code in the order, avoid all explanation except code,noooo comments or sentences and just provide a filename as label before each code file and provide a snippet of routing statements";
+        const filePath = path.join(__dirname, 'output', 'routes.txt');
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading the file:', err);
+            }
+            console.log('File content:', data);
+        });
+        let { llm, prompt, pagename, filename } = req.body;
+        prompt = `give output html css js for ONLY a ${pagename} HTML page 'routes.txt file for external htmls' as a json response with key as filename and value as content and flask as a list if absolutely necessary. Use routes by thinking that all the html pages will be in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. USE ${data} for routing. Include linking of ${filename} TOPIC: ${prompt} use images from PIXABAY`;
         const apiKey = getApiKey(llm);
         let apiEndpoint = getApiEndpoint(llm);
-        const requestBody = getRequestBody(llm, prompt);
+        const requestBody = getRequestBody(llm, prompt, pagename, filename);
 
         if (!apiEndpoint || !requestBody) {
             return res.status(400).json({ error: "Invalid or missing LLM selection." });
@@ -57,6 +71,10 @@ app.post("/generate", async (req, res) => {
             });
             
             const generatedCode = response.data.candidates[0].content.parts[0].text;
+            
+            const pythonProcess = spawn('python', ['resp-to-code.py', JSON.stringify({ generatedCode })]);
+            pythonProcess.on('close', (code) => {
+                console.log(`Python process exited with code ${code}`);});
             
             res.json({ 
                 generatedCode: generatedCode
@@ -93,6 +111,44 @@ app.post("/generate", async (req, res) => {
             responseData: error.response?.data
         });
     }
+});
+app.get("/download-zip", async (req, res) => {
+    const folderPath = path.join(__dirname, "output");
+    const zip = new JSZip();
+
+    fs.readdir(folderPath, (err, files) => {
+        if (err) {
+            return res.status(500).send("Error reading folder.");
+        }
+
+        files.forEach(file => {
+            const filePath = path.join(folderPath, file);
+            const fileData = fs.readFileSync(filePath);
+            zip.file(file, fileData);
+        });
+
+        zip.generateAsync({ type: "nodebuffer" }).then(content => {
+            res.set({
+                "Content-Type": "application/zip",
+                "Content-Disposition": "attachment; filename=output.zip"
+            });
+            res.send(content);
+        });
+    });
+});
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'output/'); 
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname); 
+    }
+});
+
+const upload = multer({ storage });
+
+app.post('/upload', upload.single('file'), (req, res) => {
+    res.send('File uploaded successfully to output folder.');
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
