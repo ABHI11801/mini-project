@@ -50,8 +50,9 @@ app.post("/generate", async (req, res) => {
             }
             console.log('File content:', data);
         });
-        let { llm, prompt, pagename, filename } = req.body;
-        prompt = `give output html css js for ONLY a ${pagename} HTML page 'routes.txt file for external htmls' as a json response with key as filename and value as content and flask as a list if absolutely necessary. Use routes by thinking that all the html pages will be in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. USE ${data} for routing. Include linking of ${filename} TOPIC: ${prompt} use images from PIXABAY`;
+        let { llm, prompt, pagename, filename, pages } = req.body;
+        console.log(llm, prompt, pagename, filename, pages);
+        prompt = `${pages} these are the total pages needed, give output ${pagename}.html ${pagename}.css ${pagename}.js for ONLY ${pagename} page and routes.txt for routing names""as a json response with key as filename and value as content"". GENERATE  flask if absolutely necessary. Use routes assuming that all HTML pages are located in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. USE ${data} for routing. Include linking of ${filename} TOPIC: ${prompt} use images from www.pixabay.com`; 
         const apiKey = getApiKey(llm);
         let apiEndpoint = getApiEndpoint(llm);
         const requestBody = getRequestBody(llm, prompt, pagename, filename);
@@ -71,7 +72,7 @@ app.post("/generate", async (req, res) => {
             });
             
             const generatedCode = response.data.candidates[0].content.parts[0].text;
-            
+            fs.writeFileSync('output.txt', generatedCode);
             const pythonProcess = spawn('python', ['resp-to-code.py', JSON.stringify({ generatedCode })]);
             pythonProcess.on('close', (code) => {
                 console.log(`Python process exited with code ${code}`);});

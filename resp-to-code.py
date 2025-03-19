@@ -5,7 +5,6 @@ import os
 import sys
 
 input_data = json.loads(sys.argv[1])
-print(input_data)
 generated_code = input_data.get("generatedCode", "")
 match = re.search(r'```json\n(.*?)\n```', generated_code, re.DOTALL)
 

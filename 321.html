@@ -1367,8 +1367,20 @@ function removePrompt(button) {
         button.parentElement.remove();
     }
 }
+async function generatePageNames(){
+    const titles=[];
+    const promptBoxes = document.querySelectorAll('.prompt-box');
+    for (const box of promptBoxes) {
+        const title = box.querySelector('.title-input').value;
+        if(title){
+            titles.push(title);
+        }
+    }
+    return titles;
+}
 
 async function generateWebContent() {
+    const titles = await generatePageNames();
     const selectedLLM = document.getElementById('llm-selection').value;
     const promptBoxes = document.querySelectorAll('.prompt-box');
     const progressBar = document.getElementById('generation-progress');
@@ -1389,7 +1401,8 @@ async function generateWebContent() {
             llm: selectedLLM,
             prompt: content,
             pagename: title,
-            filename: fileName
+            filename: fileName,
+            pages: titles
         };
 
         try {
