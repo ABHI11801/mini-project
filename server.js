@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const JSZip = require("jszip");
 const multer = require('multer');
+const mysql = require("mysql2");
 
 
 
@@ -113,6 +114,62 @@ app.post("/generate", async (req, res) => {
         });
     }
 });
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'password',
+    database: 'website_generation_data',
+    port: 3306
+});
+
+db.connect((err) => {
+    if (err) {
+        console.error('Database connection failed: ' + err.stack);
+        return;
+    }
+    console.log('Connected to database');
+});
+
+// API endpoint to save project and page data
+app.post('/api/save-project', (req, res) => {
+    const { proj_name, user_id, pages } = req.body;
+
+    // 1. Save project
+    db.query(
+        'INSERT INTO projects (user_id, proj_name) VALUES (?, ?)',
+        [user_id, proj_name],
+        (err, projectResult) => {
+            if (err) {
+                console.error('Error saving project: ' + err.stack);
+                return res.status(500).json({ error: 'Error saving project' });
+            }
+
+            const proj_id = projectResult.insertId;
+
+            // 2. Save pages
+            if (pages && pages.length > 0) {
+                pages.forEach((page, index) => {
+                    db.query(
+                        'INSERT INTO pages (proj_id, pages_name, pages_description, pages_order_index) VALUES (?, ?, ?, ?)',
+                        [proj_id, page.title, page.content, index],
+                        (err, pageResult) => {
+                            if (err) {
+                                console.error('Error saving page: ' + err.stack);
+                                // Consider how to handle partial failures (e.g., rollback)
+                                // For simplicity, we'll log and continue here
+                            } else {
+                                console.log(`Saved page: ${page.title}`);
+                            }
+                        }
+                    );
+                });
+            }
+
+            res.json({ message: 'Project and pages saved successfully', proj_id: proj_id });
+        }
+    );
+});
+
 app.get("/download-zip", async (req, res) => {
     const folderPath = path.join(__dirname, "output");
     const zip = new JSZip();

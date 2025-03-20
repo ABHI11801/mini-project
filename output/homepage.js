@@ -1,1 +1,1 @@
-// You can add JavaScript functionality here if needed
+// You can add JavaScript code here if needed
