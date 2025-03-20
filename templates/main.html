@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGen - Digital Solutions</title>
+    
+    <!-- FontAwesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Spline Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.72/build/spline-viewer.js"></script>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+    </script>
+</head>
+
+<body class="bg-black text-white relative">
+    
+    <!-- Background Spline -->
+    <div class="absolute inset-0 w-full h-full z-0">
+        <spline-viewer url="https://prod.spline.design/27horC-fZ9z2TJWn/scene.splinecode"></spline-viewer>
+    </div>
+
+    <!-- Black Box to Cover Spline Logo -->
+    <div class="absolute bottom-0 right-12 w-30 h-10 bg-black z-20"></div>
+
+    <!-- Header -->
+    <header class="flex justify-between items-center p-4 relative z-10">
+        <div></div> <!-- Placeholder for alignment -->
+        <button class="flex items-center space-x-4" aria-label="Toggle Menu" onclick="toggleMenu()">
+            <span class="text-lg font-bold">Menu</span>
+            <div class="border border-white p-2 rounded-full">
+                <i class="fas fa-bars"></i>
+            </div>
+        </button>
+    </header>
+    
+    <!-- Mobile Menu -->
+    <nav id="mobile-menu" class="hidden absolute top-16 right-4 bg-black border border-white p-4 rounded-lg z-20">
+        <ul class="space-y-2">
+            <li><a href="home.html" class="block text-white hover:text-gray-400">Home</a></li>
+            <li><a href="aboutus.html" class="block text-white hover:text-gray-400">About</a></li>
+            <li><a href="contact.html" class="block text-white hover:text-gray-400">Contact</a></li>
+            <li><a href="login.html" class="block text-white hover:text-gray-400">Login</a></li>
+            <li><a href="signup.html" class="block text-white hover:text-gray-400">Sign Up</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="flex flex-col items-center justify-center h-screen text-center relative z-10 px-4">
+        <h1 class="text-6xl md:text-9xl font-extrabold leading-none">Welcome</h1>
+        <h1 class="text-6xl md:text-9xl font-extrabold leading-none">to WebGen</h1>
+        <p class="mt-4 text-lg font-bold max-w-2xl">
+            The agency that covers your digital needs in a creative and efficient way
+        </p>
+        <div class="mt-8">
+            <button onclick="window.location.href='login.html'"
+                    class="border border-white rounded-full px-6 py-3 flex items-center space-x-2 
+                           hover:bg-white hover:text-black transition duration-300 ease-in-out">
+                <i class="fas fa-arrow-right"></i>
+                <span class="font-bold">Start Now</span>
+            </button>
+        </div>
+    </main>
+
+</body>
+</html>

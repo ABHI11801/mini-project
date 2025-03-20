@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clavin - Sign Up</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #292929;
+            --secondary-color: #2c2c2c;
+            --background-gradient: linear-gradient(135deg, #353535, #121212);
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--background-gradient);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: #333;
+            text-align: center;
+        }
+        .calvin-logo {
+            font-family: "Sigmar", sans-serif;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .password-strength {
+            height: 5px;
+            width: 100%;
+            background: #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .strength-weak { background: red; }
+        .strength-medium { background: orange; }
+        .strength-strong { background: green; }
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .switch-auth {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .switch-auth a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="calvin-logo">Clavin</div>
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+                <div class="password-strength" id="password-strength"></div>
+                <p class="error-message" id="password-message"></p>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" required>
+                <p class="error-message" id="password-error"></p>
+            </div>
+            <button type="submit" class="auth-button">Create Account</button>
+        </form>
+        <p class="switch-auth">Have an account? <a href="login.html">Log in</a></p>
+    </div>
+    <script>
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length > 6) score++;
+            if (password.length > 10) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+            return score;
+        }
+
+        document.getElementById("password").addEventListener("input", function () {
+            const password = this.value;
+            const strengthBar = document.getElementById("password-strength");
+            const passwordMessage = document.getElementById("password-message");
+            const score = checkPasswordStrength(password);
+
+            strengthBar.className = "password-strength";
+            if (score <= 1) {
+                strengthBar.classList.add("strength-weak");
+                passwordMessage.textContent = "Weak password";
+            } else if (score <= 3) {
+                strengthBar.classList.add("strength-medium");
+                passwordMessage.textContent = "Medium strength password";
+            } else {
+                strengthBar.classList.add("strength-strong");
+                passwordMessage.textContent = "Strong password";
+            }
+        });
+
+        document.getElementById("signup-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+            const passwordError = document.getElementById("password-error");
+
+            if (password !== confirmPassword) {
+                passwordError.textContent = "Passwords do not match!";
+                return;
+            } else {
+                passwordError.textContent = "";
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/api/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert("Account created successfully!");
+                    window.location.href = "login.html";
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert("Server error! Try again.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clavin - Login</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e4e4e;
+            --secondary-color: #000000;
+            --background-gradient: linear-gradient(135deg, #0b0b0b, #2a2a2a);
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--background-gradient);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            color: #333;
+            text-align: center;
+        }
+        .calvin-logo {
+            font-family: "Sigmar", sans-serif;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .error-text {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .forgot-password {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .switch-auth {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .switch-auth a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="calvin-logo">Clavin</div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+                <p id="email-error" class="error-text"></p>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+                <p id="password-error" class="error-text"></p>
+            </div>
+            <button type="submit" class="auth-button">Login</button>
+            <button type="button" class="forgot-password" onclick="forgotPassword()">Forgot Password?</button>
+        </form>
+        <p class="switch-auth">Don't have an account? <a href="signup.html">Sign up</a></p>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const emailError = document.getElementById('email-error');
+            const passwordError = document.getElementById('password-error');
+
+            // Reset error messages
+            emailError.textContent = "";
+            emailError.style.display = "none";
+            passwordError.textContent = "";
+            passwordError.style.display = "none";
+
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    window.location.href = 'home.html';
+                } else {
+                    // Check for specific error messages and show them below the input fields
+                    if (data.message === "Email not registered") {
+                        emailError.textContent = "Email not registered";
+                        emailError.style.display = "block";
+                    } else if (data.message === "Incorrect password") {
+                        passwordError.textContent = "Incorrect password";
+                        passwordError.style.display = "block";
+                    } else {
+                        emailError.textContent = "Login failed. Please check your credentials.";
+                        emailError.style.display = "block";
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                emailError.textContent = "An error occurred. Please try again later.";
+                emailError.style.display = "block";
+            }
+        });
+
+        function forgotPassword() {
+            window.location.href = 'forgot.html'; // Redirect to forgot password page
+        }
+    </script>
+</body>
+</html>

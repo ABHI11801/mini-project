@@ -8,6 +8,8 @@ const fs = require("fs");
 const JSZip = require("jszip");
 const multer = require('multer');
 const mysql = require("mysql2");
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 
 
@@ -169,6 +171,94 @@ app.post('/api/save-project', (req, res) => {
         }
     );
 });
+// 🚀 Signup Route
+app.post('/api/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+  
+    if (!username || !email || !password) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+  
+    try {
+      db.query('SELECT * FROM users WHERE user_email = ?', [email], async (err, results) => {
+        if (err) {
+          console.error('❌ Error checking email:', err.message);
+          return res.status(500).json({ success: false, message: 'Server error' });
+        }
+  
+        if (results.length > 0) {
+          return res.status(400).json({ success: false, message: 'Email already registered' });
+        }
+  
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+  
+        db.query('INSERT INTO users (user_name, user_email, user_password) VALUES (?, ?, ?)', [username, email, hashedPassword], (err) => {
+          if (err) {
+            console.error('❌ Error inserting user:', err.message);
+            return res.status(500).json({ success: false, message: 'Error creating user' });
+          }
+  
+          res.status(201).json({ success: true, message: 'User registered successfully' });
+        });
+      });
+    } catch (error) {
+      console.error('❌ Signup error:', error.message);
+      res.status(500).json({ success: false, message: 'Server error' });
+    }
+  });
+  
+  // 🚀 Login Route
+  app.post("/api/login", (req, res) => {
+    const { email, password } = req.body;
+  
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+  
+    db.query("SELECT * FROM users WHERE user_email = ?", [email], async (err, results) => {
+      if (err) {
+        console.error("❌ Error fetching user:", err.message);
+        return res.status(500).json({ success: false, message: "Server error" });
+      }
+  
+      if (results.length === 0) {
+        return res.status(401).json({ success: false, message: "Email not registered" });
+      }
+  
+      const user = results[0];
+  
+      try {
+        const isMatch = await bcrypt.compare(password, user.user_password);
+  
+        if (!isMatch) {
+          return res.status(401).json({ success: false, message: "Incorrect password" });
+        }
+  
+        // Generate JWT token
+        const token = jwt.sign(
+          { user_id: user.user_id }, // Using `user_id` from the database
+          process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImthaXRvIiwiZW1haWwiOiJrYWl0b0BleGFtcGxlLmNvbSIsImlhdCI6MTcxMDk5NzQyMywiZXhwIjoxNzEwOTk3ODIzfQ.GKpJ-KD4qNViLfdFbUeVw7xMOeFvIYwBGqNoVa_XvD0",
+          { expiresIn: "1h" }
+        );
+  
+        res.status(200).json({
+          success: true,
+          message: "Login successful",
+          token,
+          user: {
+            id: user.user_id, // Use `user_id` instead of `id`
+            username: user.user_name, // Use `user_name` instead of `username`
+            email: user.user_email,
+          },
+        });
+      } catch (error) {
+        console.error("❌ Login error:", error.message);
+        res.status(500).json({ success: false, message: "Server error during authentication" });
+      }
+    });
+  });
+  
 
 app.get("/download-zip", async (req, res) => {
     const folderPath = path.join(__dirname, "output");
