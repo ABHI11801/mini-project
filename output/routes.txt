@@ -1,4 +1,0 @@
-/
-/destinations
-/about
-/contact

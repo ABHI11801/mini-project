@@ -10,6 +10,7 @@ const multer = require('multer');
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const OpenAI = require("openai");
 
 
 
@@ -43,7 +44,7 @@ const getRequestBody = (llm, prompt) => {
         codellama: { prompt, temperature: 0.7 },
     }[llm];
 };
-data=""
+data = ""
 app.post("/generate", async (req, res) => {
     try {
         const filePath = path.join(__dirname, 'output', 'routes.txt');
@@ -53,9 +54,9 @@ app.post("/generate", async (req, res) => {
             }
             console.log('File content:', data);
         });
-        let { llm, prompt, pagename, filename, pages } = req.body;
-        console.log(llm, prompt, pagename, filename, pages);
-        prompt = `${pages} these are the total pages needed, give output ${pagename}.html ${pagename}.css ${pagename}.js for ONLY ${pagename} page and routes.txt for routing names""as a json response with key as filename and value as content"". GENERATE  flask if absolutely necessary. Use routes assuming that all HTML pages are located in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. USE ${data} for routing. Include linking of ${filename} TOPIC: ${prompt} use images from www.pixabay.com`; 
+        let { llm, prompt, pagename, filename, pages, theme } = req.body;
+        console.log(llm, prompt, pagename, filename, pages, theme);
+        prompt = `${pages} these are the total pages needed with theme ${theme} navbar with pagenames, give output ${pagename}.html ${pagename}.css ${pagename}.js for ONLY ${pagename} page and routes.txt for routing names""as a json response with key as filename and value as content"". GENERATE  flask if absolutely necessary. Use routes assuming that all HTML pages are located in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. USE ${data} for routing. INCLUDE LINKING of ${filename} assuming it is in the folder. TOPIC: ${prompt} use images from stable diffution`;
         const apiKey = getApiKey(llm);
         let apiEndpoint = getApiEndpoint(llm);
         const requestBody = getRequestBody(llm, prompt, pagename, filename);
@@ -67,50 +68,73 @@ app.post("/generate", async (req, res) => {
         if (llm === "gemini") {
             const geminiKey = process.env.GOOGLE_GEMINI_API_KEY;
             apiEndpoint = `${apiEndpoint}?key=${geminiKey}`;
-            
+
             const response = await axios.post(apiEndpoint, requestBody, {
                 headers: {
                     "Content-Type": "application/json",
                 }
             });
-            
+
             const generatedCode = response.data.candidates[0].content.parts[0].text;
             fs.writeFileSync('output.txt', generatedCode);
             const pythonProcess = spawn('python', ['resp-to-code.py', JSON.stringify({ generatedCode })]);
             pythonProcess.on('close', (code) => {
-                console.log(`Python process exited with code ${code}`);});
-            
-            res.json({ 
+                console.log(`Python process exited with code ${code}`);
+            });
+
+            res.json({
                 generatedCode: generatedCode
             });
-            
+
+        } else if (llm === "openai") {
+            const client = new OpenAI({
+                baseURL: "https://models.inference.ai.azure.com",
+                apiKey: process.env.OPENAI_API_KEY
+            });
+
+            const response = await client.chat.completions.create({
+                messages: [
+                    { role: "system", content: "" },
+                    { role: "user", content: prompt }
+                ],
+                model: "gpt-4o-mini",
+                temperature: 1,
+                max_tokens: 4096,
+                top_p: 1
+            });
+
+            console.log(response);
+
+            const generatedCode = response.data.choices[0].message.content;
+            res.json({ generatedCode });
+
         } else {
             if (!apiKey) {
                 return res.status(400).json({ error: "API key not found for selected LLM." });
             }
-            
+
             const response = await axios.post(apiEndpoint, requestBody, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     "Content-Type": "application/json",
                 }
             });
-            
+
             let generatedCode;
             if (llm === "gpt") {
                 generatedCode = response.data.choices[0].message.content;
             } else {
                 generatedCode = response.data.completion;
             }
-            
-            res.json({ 
+
+            res.json({
                 generatedCode: generatedCode
             });
         }
     } catch (error) {
         console.error("Error generating content:", error.response?.data || error.message);
-        res.status(500).json({ 
-            error: "Error generating content", 
+        res.status(500).json({
+            error: "Error generating content",
             details: error.message,
             responseData: error.response?.data
         });
@@ -174,91 +198,90 @@ app.post('/api/save-project', (req, res) => {
 // 🚀 Signup Route
 app.post('/api/signup', async (req, res) => {
     const { username, email, password } = req.body;
-  
+
     if (!username || !email || !password) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+        return res.status(400).json({ success: false, message: 'All fields are required' });
     }
-  
+
     try {
-      db.query('SELECT * FROM users WHERE user_email = ?', [email], async (err, results) => {
-        if (err) {
-          console.error('❌ Error checking email:', err.message);
-          return res.status(500).json({ success: false, message: 'Server error' });
-        }
-  
-        if (results.length > 0) {
-          return res.status(400).json({ success: false, message: 'Email already registered' });
-        }
-  
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-  
-        db.query('INSERT INTO users (user_name, user_email, user_password) VALUES (?, ?, ?)', [username, email, hashedPassword], (err) => {
-          if (err) {
-            console.error('❌ Error inserting user:', err.message);
-            return res.status(500).json({ success: false, message: 'Error creating user' });
-          }
-  
-          res.status(201).json({ success: true, message: 'User registered successfully' });
+        db.query('SELECT * FROM users WHERE user_email = ?', [email], async (err, results) => {
+            if (err) {
+                console.error('❌ Error checking email:', err.message);
+                return res.status(500).json({ success: false, message: 'Server error' });
+            }
+
+            if (results.length > 0) {
+                return res.status(400).json({ success: false, message: 'Email already registered' });
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            db.query('INSERT INTO users (user_name, user_email, user_password) VALUES (?, ?, ?)', [username, email, hashedPassword], (err) => {
+                if (err) {
+                    console.error('❌ Error inserting user:', err.message);
+                    return res.status(500).json({ success: false, message: 'Error creating user' });
+                }
+
+                res.status(201).json({ success: true, message: 'User registered successfully' });
+            });
         });
-      });
     } catch (error) {
-      console.error('❌ Signup error:', error.message);
-      res.status(500).json({ success: false, message: 'Server error' });
+        console.error('❌ Signup error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
-  });
-  
-  // 🚀 Login Route
-  app.post("/api/login", (req, res) => {
+});
+
+// 🚀 Login Route
+app.post("/api/login", (req, res) => {
     const { email, password } = req.body;
-  
+
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+        return res.status(400).json({ success: false, message: "All fields are required" });
     }
-  
+
     db.query("SELECT * FROM users WHERE user_email = ?", [email], async (err, results) => {
-      if (err) {
-        console.error("❌ Error fetching user:", err.message);
-        return res.status(500).json({ success: false, message: "Server error" });
-      }
-  
-      if (results.length === 0) {
-        return res.status(401).json({ success: false, message: "Email not registered" });
-      }
-  
-      const user = results[0];
-  
-      try {
-        const isMatch = await bcrypt.compare(password, user.user_password);
-  
-        if (!isMatch) {
-          return res.status(401).json({ success: false, message: "Incorrect password" });
+        if (err) {
+            console.error("❌ Error fetching user:", err.message);
+            return res.status(500).json({ success: false, message: "Server error" });
         }
-  
-        // Generate JWT token
-        const token = jwt.sign(
-          { user_id: user.user_id }, // Using `user_id` from the database
-          process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImthaXRvIiwiZW1haWwiOiJrYWl0b0BleGFtcGxlLmNvbSIsImlhdCI6MTcxMDk5NzQyMywiZXhwIjoxNzEwOTk3ODIzfQ.GKpJ-KD4qNViLfdFbUeVw7xMOeFvIYwBGqNoVa_XvD0",
-          { expiresIn: "1h" }
-        );
-  
-        res.status(200).json({
-          success: true,
-          message: "Login successful",
-          token,
-          user: {
-            id: user.user_id, // Use `user_id` instead of `id`
-            username: user.user_name, // Use `user_name` instead of `username`
-            email: user.user_email,
-          },
-        });
-      } catch (error) {
-        console.error("❌ Login error:", error.message);
-        res.status(500).json({ success: false, message: "Server error during authentication" });
-      }
+
+        if (results.length === 0) {
+            return res.status(401).json({ success: false, message: "Email not registered" });
+        }
+
+        const user = results[0];
+
+        try {
+            const isMatch = await bcrypt.compare(password, user.user_password);
+
+            if (!isMatch) {
+                return res.status(401).json({ success: false, message: "Incorrect password" });
+            }
+
+            const token = jwt.sign(
+                { user_id: user.user_id },
+                process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImthaXRvIiwiZW1haWwiOiJrYWl0b0BleGFtcGxlLmNvbSIsImlhdCI6MTcxMDk5NzQyMywiZXhwIjoxNzEwOTk3ODIzfQ.GKpJ-KD4qNViLfdFbUeVw7xMOeFvIYwBGqNoVa_XvD0",
+                { expiresIn: "1h" }
+            );
+
+            res.status(200).json({
+                success: true,
+                message: "Login successful",
+                token,
+                user: {
+                    id: user.user_id,
+                    username: user.user_name,
+                    email: user.user_email,
+                },
+            });
+        } catch (error) {
+            console.error("❌ Login error:", error.message);
+            res.status(500).json({ success: false, message: "Server error during authentication" });
+        }
     });
-  });
-  
+});
+
 
 app.get("/download-zip", async (req, res) => {
     const folderPath = path.join(__dirname, "output");
@@ -286,10 +309,10 @@ app.get("/download-zip", async (req, res) => {
 });
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'output/'); 
+        cb(null, 'output/');
     },
     filename: (req, file, cb) => {
-        cb(null, file.originalname); 
+        cb(null, file.originalname);
     }
 });
 

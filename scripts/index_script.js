@@ -448,7 +448,8 @@ async function generateWebContent() {
             prompt: content,
             pagename: title,
             filename: fileName,
-            pages: titles
+            pages: titles,
+            theme: selectedColors
         };
 
         try {
