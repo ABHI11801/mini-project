@@ -144,6 +144,7 @@
         <div class="form-step" id="step-verify">
             <div class="instruction-text">
                 <p>We've sent a verification code to your email. Please enter it below.</p>
+                <p>Code expires in: <span id="countdown">10:00</span></p>
             </div>
             <form id="verify-form">
                 <div class="form-group">
@@ -180,32 +181,208 @@
         document.addEventListener('DOMContentLoaded', () => {
             let steps = document.querySelectorAll('.form-step');
             let currentStep = 0;
+            let countdownInterval;
+            let timeLeft = 600; // 10 minutes in seconds
+
+            function updateCountdown() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('countdown').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown').textContent = 'EXPIRED';
+                    document.getElementById('verification-code-error').textContent = 'Code has expired. Please request a new one.';
+                    document.getElementById('verification-code-error').style.display = 'block';
+                }
+                timeLeft--;
+            }
+
+            function startCountdown() {
+                timeLeft = 600; // Reset to 10 minutes
+                clearInterval(countdownInterval);
+                countdownInterval = setInterval(updateCountdown, 1000);
+            }
 
             function showStep(index) {
                 steps.forEach(step => step.classList.remove('active'));
                 steps[index].classList.add('active');
+                
+                if (index === 1) { // Verification step
+                    startCountdown();
+                } else {
+                    clearInterval(countdownInterval);
+                }
             }
 
-            document.getElementById('email-form').addEventListener('submit', function(event) {
+            // Add resend code functionality
+            document.getElementById('resend-code').addEventListener('click', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const errorElement = document.getElementById('verification-code-error');
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/generate-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user_email: email })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        startCountdown(); // Reset the countdown
+                        errorElement.style.display = 'none';
+                    } else {
+                        errorElement.textContent = data.message || 'Failed to resend code';
+                        errorElement.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorElement.textContent = 'An error occurred. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+            });
+
+            document.getElementById('email-form').addEventListener('submit', async function(event) {
                 event.preventDefault();
-                document.getElementById('email-error').style.display = 'none';
-                let email = document.getElementById('email').value;
-                if (!email) {
-                    document.getElementById('email-error').textContent = 'Email is required';
-                    document.getElementById('email-error').style.display = 'block';
+                const errorElement = document.getElementById('email-error');
+                const successMessage = document.getElementById('success-message');
+                const email = document.getElementById('email').value;
+                
+                // Clear previous messages
+                errorElement.style.display = 'none';
+                successMessage.style.display = 'none';
+                
+                try {
+                    // First check if email exists
+                    const checkResponse = await fetch('http://localhost:5000/api/check-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user_email: email })
+                    });
+
+                    const checkData = await checkResponse.json();
+
+                    if (checkResponse.ok) {
+                        // Generate verification code
+                        const codeResponse = await fetch('http://localhost:5000/api/generate-code', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ user_email: email })
+                        });
+
+                        const codeData = await codeResponse.json();
+                        
+                        if (codeResponse.ok) {
+                            // Show success message without the code
+                            successMessage.textContent = 'Verification code has been sent to your email. Please check your inbox.';
+                            successMessage.style.display = 'block';
+                            showStep(1);
+                        } else {
+                            errorElement.textContent = 'Failed to generate verification code';
+                            errorElement.style.display = 'block';
+                        }
+                    } else {
+                        errorElement.textContent = checkData.message || 'This email is not registered in our system.';
+                        errorElement.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error details:', error);
+                    errorElement.textContent = 'An error occurred. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+            });
+
+            document.getElementById('verify-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const errorElement = document.getElementById('verification-code-error');
+                const code = document.getElementById('verification-code').value;
+                const email = document.getElementById('email').value;
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/verify-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user_email: email, code })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showStep(2);
+                    } else {
+                        errorElement.textContent = data.message || 'Invalid verification code';
+                        errorElement.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorElement.textContent = 'An error occurred. Please try again.';
+                    errorElement.style.display = 'block';
+                }
+            });
+
+            document.getElementById('reset-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                const email = document.getElementById('email').value;
+                const code = document.getElementById('verification-code').value;
+                
+                if (newPassword !== confirmPassword) {
+                    alert('Passwords do not match!');
                     return;
                 }
-                showStep(1);
-            });
+                
+                // Show loading state
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.textContent;
+                submitButton.textContent = 'Resetting Password...';
+                submitButton.disabled = true;
+                
+                try {
+                    const response = await fetch('http://localhost:5000/api/reset-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_email: email,
+                            code: code,
+                            new_password: newPassword
+                        })
+                    });
 
-            document.getElementById('verify-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                showStep(2);
-            });
+                    const data = await response.json();
 
-            document.getElementById('reset-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                alert('Password reset successful!');
+                    if (response.ok) {
+                        // Show success message
+                        const successMessage = document.getElementById('success-message');
+                        successMessage.textContent = 'Password reset successful! Redirecting to login page...';
+                        successMessage.style.display = 'block';
+                        
+                        // Redirect to login page after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        alert(data.message || 'Failed to reset password. Please try again.');
+                        submitButton.textContent = originalButtonText;
+                        submitButton.disabled = false;
+                    }
+                } catch (error) {
+                    alert('An error occurred. Please try again later.');
+                    submitButton.textContent = originalButtonText;
+                    submitButton.disabled = false;
+                }
             });
 
             showStep(currentStep);

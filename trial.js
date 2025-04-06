@@ -1,6 +1,6 @@
-import { Client } from "@gradio/client"; // Use import instead of require()
-
 async function main() {
+    const { Client } = await import("@gradio/client");
+
     const client = await Client.connect("Qwen/Qwen2.5-Coder-Artifacts");
     console.log("Connected to LLM");
 

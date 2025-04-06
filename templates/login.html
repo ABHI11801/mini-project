@@ -114,26 +114,32 @@
             const password = document.getElementById('password').value;
             const emailError = document.getElementById('email-error');
             const passwordError = document.getElementById('password-error');
-
+    
             // Reset error messages
             emailError.textContent = "";
             emailError.style.display = "none";
             passwordError.textContent = "";
             passwordError.style.display = "none";
-
+    
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                console.log('Attempting login with email:', email);
+                const response = await fetch('http://localhost:5500/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
                 const data = await response.json();
-
+                console.log('Login response:', data);
+    
                 if (data.success) {
+                    console.log('Login successful, storing token and user data');
                     localStorage.setItem('token', data.token);
-                    window.location.href = 'home.html';
+                    localStorage.setItem('currentUser', JSON.stringify(data.user)); // Store full user object
+                    console.log('Token stored:', data.token ? 'Yes' : 'No');
+                    console.log('User data stored:', data.user ? 'Yes' : 'No');
+                    window.location.href = 'loginfirst.html'; // Assuming home.html exists
                 } else {
-                    // Check for specific error messages and show them below the input fields
+                    console.log('Login failed:', data.message);
                     if (data.message === "Email not registered") {
                         emailError.textContent = "Email not registered";
                         emailError.style.display = "block";
@@ -151,9 +157,9 @@
                 emailError.style.display = "block";
             }
         });
-
+    
         function forgotPassword() {
-            window.location.href = 'forgot.html'; // Redirect to forgot password page
+            window.location.href = 'forgot.html';
         }
     </script>
 </body>

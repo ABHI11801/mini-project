@@ -3,13 +3,15 @@
     --secondary-color: #141414;
     --background-gradient: linear-gradient(135deg, #333234, #000000);
     --button-color: #000000;
-    }
-    * {
+}
+
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    }
-    body {
+}
+
+body {
     font-family: 'Arial', sans-serif;
     background: var(--background-gradient);
     color: white;
@@ -17,38 +19,53 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    }
-    .background-overlay {
+    overflow-x: hidden;
+}
+
+.background-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
     pointer-events: none;
     z-index: -1;
-    }
-    .maincontainer{
+}
+
+.maincontainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.subcontainer {
     display: flex;
     flex-direction: column;
     width: 100%;
     align-items: center;
-    height: 100vh;
-    }
-    .container {
-    width: 90%;
-    max-width: 90%;
-    height: 70%;
+    min-height: 80vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 1400px;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     display: flex;
+    flex-direction: row;
     overflow: hidden;
     position: relative;
-    }
-    .sidebar {
+    margin-bottom: 20px;
+}
+
+.sidebar {
     width: 80px;
+    min-height: 600px;
     background: #f4f4f4;
     display: flex;
     flex-direction: column;
@@ -58,20 +75,21 @@
     position: relative;
     z-index: 10;
     color: #181717;
-    }
-    .sidebar.expanded {
+}
+
+.sidebar.expanded {
     width: 250px;
-    }
-    .calvin{
-    padding-right: 65%;
+}
+
+.calvin {
     font-family: "Sigmar", sans-serif;
     font-weight: 400;
     font-style: normal;
-    font-size: 5vw;
-    }
-    /* Add this to your existing CSS styles */
-    /* Night mode toggle button styling - increased size and adjusted positioning */
-    .night-mode-toggle {
+    font-size: 2.5rem;
+    margin-right: auto;
+}
+
+.night-mode-toggle {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -84,229 +102,258 @@
     cursor: pointer;
     transition: transform 0.2s, background-color 0.3s;
     margin-right: 20px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    }
-    .night-mode-toggle:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.night-mode-toggle:hover {
     transform: scale(1.08);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    /* More aesthetic night mode styles with softer colors */
-    body.night-mode {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.night-mode {
     background: linear-gradient(135deg, #2d3748, #1a365d);
-    }
-    body.night-mode .container {
+}
+
+body.night-mode .container {
     background: #2d3748;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     border: 1px solid #4a5568;
-    }
-    body.night-mode .sidebar {
+}
+
+body.night-mode .sidebar {
     background: #1a202c;
     border-right: 1px solid #4a5568;
-    }
-    body.night-mode .left-section {
+}
+
+body.night-mode .left-section {
     background: #2d3748;
     color: #e2e8f0;
-    }
-    body.night-mode .right-section {
+}
+
+body.night-mode .right-section {
     color: #e2e8f0;
-    }
-    body.night-mode .profile-dropdown {
+}
+
+body.night-mode .profile-dropdown {
     background: #2d3748;
     border: 1px solid #4a5568;
-    }
-    body.night-mode .dropdown-item {
+}
+
+body.night-mode .dropdown-item {
     color: #e2e8f0;
     border-bottom: 1px solid #4a5568;
-    }
-    body.night-mode .dropdown-item:hover {
+}
+
+body.night-mode .dropdown-item:hover {
     background: #4a5568;
-    }
-    body.night-mode .prompt-box {
+}
+
+body.night-mode .prompt-box {
     background: #4a5568;
     border: 1px solid #718096;
-    }
-    body.night-mode .title-input, 
-    body.night-mode textarea {
+}
+
+body.night-mode .title-input,
+body.night-mode textarea {
     background: #2d3748;
     color: #e2e8f0;
     border: 1px solid #718096;
-    }
-    body.night-mode .file-upload-label {
+}
+
+body.night-mode .file-upload-label {
     background: #2d3748;
     color: #e2e8f0;
     border: 1px dashed #718096;
-    }
-    body.night-mode .project-item {
+}
+
+body.night-mode .project-item {
     background: #4a5568;
-    }
-    body.night-mode .project-item:hover {
+}
+
+body.night-mode .project-item:hover {
     background: #718096;
-    }
-    body.night-mode .project-title {
+}
+
+body.night-mode .project-title {
     color: #e2e8f0;
-    }
-    body.night-mode .settings-item:hover {
+}
+
+body.night-mode .settings-item:hover {
     background: #4a5568;
-    }
-    body.night-mode .notification {
+}
+
+body.night-mode .notification {
     background-color: rgba(45, 55, 72, 0.9);
     color: #e2e8f0;
     border: 1px solid #718096;
-    }
-    body.night-mode .notification-close:hover {
+}
+
+body.night-mode .notification-close:hover {
     color: #e2e8f0;
-    }
-    /* Add some nice transitions for smoother toggle experience */
-    body, .container, .sidebar, .left-section, .right-section, 
-    .profile-dropdown, .prompt-box, .title-input, textarea, 
-    .file-upload-label, .project-item {
+}
+
+body,
+.container,
+.sidebar,
+.left-section,
+.right-section,
+.profile-dropdown,
+.prompt-box,
+.title-input,
+textarea,
+.file-upload-label,
+.project-item {
     transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-    }
-    /* Additional styles to enhance the dark mode aesthetics */
-    body.night-mode h2, 
-    body.night-mode h5,
-    body.night-mode .calvin {
+}
+
+body.night-mode h2,
+body.night-mode h5,
+body.night-mode .calvin {
     color: #90cdf4;
-    }
-    body.night-mode .buttons button {
+}
+
+body.night-mode .buttons button {
     background: #63b3ed;
-    }
-    body.night-mode .progress-container {
+}
+
+body.night-mode .progress-container {
     background-color: #4a5568;
-    }
-    body.night-mode .add-btn {
+}
+
+body.night-mode .add-btn {
     background: #63b3ed;
-    }
-    /* Adjust the placement within the profile section */
-    .profile-section {
-    justify-content: flex-end;
-    align-items: center;
-    }
-    /* Additional night mode styles for consistent appearance */
-    /* Profile avatar in night mode */
-    body.night-mode .profile-avatar {
+}
+
+
+
+body.night-mode .profile-avatar {
     background: #4a5568;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-    }
-    /* Progress bar in night mode */
-    body.night-mode .progress-bar {
-    background-color: #63b3ed; /* Lighter blue for contrast */
-    }
-    /* Select dropdown in night mode */
-    body.night-mode select {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.night-mode .progress-bar {
+    background-color: #63b3ed;
+}
+
+body.night-mode select {
     background-color: #2d3748;
     color: #e2e8f0;
     border: 1px solid #4a5568;
-    }
-    body.night-mode select option {
+}
+
+body.night-mode select option {
     background-color: #2d3748;
     color: #e2e8f0;
-    }
-    /* Menu bars in night mode */
-    body.night-mode .menu-toggle .bar {
+}
+
+body.night-mode .menu-toggle .bar {
     background: #e2e8f0;
-    }
-    /* Night mode toggle button in night mode */
-    body.night-mode .night-mode-toggle {
+}
+
+body.night-mode .night-mode-toggle {
     background: #63b3ed;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-    }
-    /* Sidebar elements in night mode */
-    body.night-mode .sidebar i {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.night-mode .sidebar i {
     color: #63b3ed;
-    }
-    body.night-mode .settings-item {
+}
+
+body.night-mode .settings-item {
     color: #e2e8f0;
-    }
-    body.night-mode .calvin {
+}
+
+body.night-mode .calvin {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    }
-    /* Add button in night mode */
-    body.night-mode .add-btn {
+}
+body.night-mode .add-btn {
     background: #4299e1;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-    }
-    /* Remove button in night mode */
-    body.night-mode .remove-btn {
-    background: #e53e3e; /* Red shade that matches dark theme */
-    }
-    /* File upload label adjustments */
-    body.night-mode .file-upload-label span {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+body.night-mode .remove-btn {
+    background: #e53e3e;
+}
+
+body.night-mode .file-upload-label span {
     color: #e2e8f0;
-    }
-    body.night-mode .file-name {
+}
+
+body.night-mode .file-name {
     color: #a0aec0;
-    }
-    /* Improve color preview visibility in dark mode */
-    body.night-mode .color-preview {
+}
+
+body.night-mode .color-preview {
     border: 2px solid #4a5568;
-    }
-    body.night-mode .color-preview.selected {
+}
+
+body.night-mode .color-preview.selected {
     border: 2px solid #63b3ed;
-    box-shadow: 0 0 5px rgba(0,0,0,0.5);
-    }
-    /* Text labels to ensure visibility */
-    body.night-mode label {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+body.night-mode label {
     color: #e2e8f0;
-    }
-    /* Ensure all icons are visible */
-    body.night-mode i {
+}
+body.night-mode i {
     color: #e2e8f0;
-    }
-    /* Keep primary elements' icons in their original color scheme */
-    body.night-mode .projects-header i,
-    body.night-mode .settings-item i,
-    body.night-mode .dropdown-item i,
-    body.night-mode .project-icon i {
+}
+body.night-mode .projects-header i,
+body.night-mode .settings-item i,
+body.night-mode .dropdown-item i,
+body.night-mode .project-icon i {
     color: #63b3ed;
-    }
-    .profile-section {
+}
+
+.profile-section {
     display: flex;
     flex-direction: row;
-    align-items: right;
-    justify-content: end;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    padding: 20px 10px;
+    padding: 20px 0;
     position: relative;
-    }
-    .profile-avatar {
-    width: 80px;
-    height: 80px;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: var(--primary-color);
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
-    font-size: 40px;
-    margin-bottom: 15px;
+    font-size: 24px;
     cursor: pointer;
     transition: transform 0.2s;
-    }
-    .profile-avatar:hover {
+}
+
+.profile-avatar:hover {
     transform: scale(1.05);
-    }
-    /* Profile Dropdown Menu */
-    .profile-dropdown {
+}
+
+.profile-dropdown {
     position: absolute;
     top: 110px;
     right: 10px;
     width: 200px;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     z-index: 100;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    }
-    .profile-dropdown.active {
+}
+
+.profile-dropdown.active {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
-    }
-    .dropdown-item {
+}
+
+.dropdown-item {
     display: flex;
     align-items: center;
     padding: 15px;
@@ -314,106 +361,127 @@
     border-bottom: 1px solid #eee;
     cursor: pointer;
     transition: background 0.2s;
-    }
-    .dropdown-item:last-child {
+}
+
+.dropdown-item:last-child {
     border-bottom: none;
-    }
-    .dropdown-item:hover {
+}
+
+.dropdown-item:hover {
     background: #f5f5f5;
-    }
-    .dropdown-item i {
+}
+
+.dropdown-item i {
     margin-right: 10px;
     color: var(--primary-color);
     width: 20px;
     text-align: center;
-    }
-    .menu-toggle {
+}
+
+.menu-toggle {
     position: absolute;
     top: 15px;
     right: 15px;
     cursor: pointer;
     z-index: 20;
-    }
-    .menu-toggle .bar {
+}
+
+.menu-toggle .bar {
     width: 25px;
     height: 3px;
     background: #333;
     margin: 5px 0;
     transition: 0.4s;
-    }
-    .sidebar-settings {
+}
+
+.sidebar-settings {
     width: 100%;
     display: none;
     padding: 0 15px;
-    }
-    .sidebar.expanded .sidebar-settings {
+}
+
+.sidebar.expanded .sidebar-settings {
     display: block;
-    }
-    .settings-item {
+}
+
+.settings-item {
     display: flex;
     align-items: center;
     padding: 10px;
     cursor: pointer;
     border-radius: 5px;
     transition: background 0.3s;
-    }
-    .settings-item:hover {
+}
+
+.settings-item:hover {
     background: #e0e0e0;
-    }
-    .settings-item i {
+}
+
+.settings-item i {
     margin-right: 10px;
     color: var(--primary-color);
-    }
-    #new-project-btn {
+}
+
+#new-project-btn {
     background-color: rgba(106, 17, 203, 0.1);
     color: var(--primary-color);
     font-weight: 600;
     margin-bottom: 15px;
     border-radius: 8px;
     transition: all 0.3s ease;
-    }
-    #new-project-btn:hover {
+}
+
+#new-project-btn:hover {
     background-color: var(--primary-color);
     color: white;
     transform: translateY(-2px);
-    }
-    #new-project-btn i {
+}
+
+#new-project-btn i {
     font-size: 1.1em;
-    }
-    /* Night mode support */
-    body.night-mode #new-project-btn {
+}
+
+body.night-mode #new-project-btn {
     background-color: rgba(99, 179, 237, 0.15);
     color: #63b3ed;
-    }
-    body.night-mode #new-project-btn:hover {
+}
+
+body.night-mode #new-project-btn:hover {
     background-color: #4299e1;
     color: white;
-    }
-    body.night-mode #new-project-btn i {
+}
+
+body.night-mode #new-project-btn i {
     color: #63b3ed;
-    }
-    body.night-mode #new-project-btn:hover i {
+}
+
+body.night-mode #new-project-btn:hover i {
     color: white;
-    }
-    .left-section {
+}
+
+.left-section {
     width: 30%;
+    min-height: 600px;
     background: #f9f9f9;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     color: #2575fc;
-    }
-    .project-title-container {
+}
+
+.project-title-container {
     margin-bottom: 15px;
     width: 100%;
-    }
-    .editable-title-wrapper {
+}
+
+.editable-title-wrapper {
     display: flex;
     align-items: center;
     margin-top: 8px;
-    }
-    .project-title-input {
+}
+
+.project-title-input {
     flex-grow: 1;
     padding: 8px 12px;
     border: 1px solid #ddd;
@@ -423,18 +491,21 @@
     background-color: white;
     color: #333;
     transition: all 0.3s ease;
-    }
-    .project-title-input:focus {
+}
+
+.project-title-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
-    }
-    .project-title-input.readonly {
+}
+
+.project-title-input.readonly {
     background-color: transparent;
     border-color: transparent;
     padding-left: 0;
-    }
-    .edit-title-btn {
+}
+
+.edit-title-btn {
     background: none;
     border: none;
     color: #999;
@@ -447,56 +518,67 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    }
-    .edit-title-btn:hover {
+}
+
+.edit-title-btn:hover {
     background-color: rgba(106, 17, 203, 0.1);
     color: var(--primary-color);
-    }
-    /* Night mode support for project title */
-    body.night-mode .project-title-input {
+}
+
+body.night-mode .project-title-input {
     background-color: #2d3748;
     color: #e2e8f0;
     border-color: #4a5568;
-    }
-    body.night-mode .project-title-input.readonly {
+}
+
+body.night-mode .project-title-input.readonly {
     background-color: transparent;
     border-color: transparent;
-    }
-    body.night-mode .edit-title-btn {
+}
+
+body.night-mode .edit-title-btn {
     color: #a0aec0;
-    }
-    body.night-mode .edit-title-btn:hover {
+}
+
+body.night-mode .edit-title-btn:hover {
     background-color: rgba(99, 179, 237, 0.2);
     color: #63b3ed;
-    }
-    .progress-container {
+}
+
+.progress-container {
     width: 100%;
     background-color: #e0e0e0;
     border-radius: 13px;
     padding: 3px;
     margin-top: 10px;
-    }
-    .progress-bar {
+}
+
+.progress-bar {
     width: 0%;
     height: 20px;
     background-color: var(--primary-color);
     border-radius: 10px;
     transition: width 0.5s ease-in-out;
-    }
-    .right-section {
+}
+
+.right-section {
     width: 70%;
+    min-height: 600px;
     padding: 20px;
     position: relative;
-    }
-    .prompt-container {
+    overflow: auto;
+}
+
+.prompt-container {
     display: flex;
     position: relative;
     overflow-x: auto;
     gap: 15px;
     padding-bottom: 20px;
     align-items: flex-start;
-    }
-    .prompt-box {
+}
+
+.prompt-box {
     min-width: 300px;
     background: #f1f1f1;
     border-radius: 10px;
@@ -505,24 +587,27 @@
     flex-direction: column;
     gap: 10px;
     position: relative;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .prompt-box .title-input {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-box .title-input {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-weight: bold;
-    }
-    .prompt-box textarea {
+}
+
+.prompt-box textarea {
     width: 100%;
     min-height: 200px;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 8px;
     resize: vertical;
-    }
-    .file-upload-label {
+}
+
+.file-upload-label {
     display: block;
     margin-top: 10px;
     background: #f0f0f0;
@@ -532,16 +617,19 @@
     cursor: pointer;
     border-radius: 5px;
     color: #333;
-    }
-    .file-upload-label input[type="file"] {
+}
+
+.file-upload-label input[type="file"] {
     display: none;
-    }
-    .file-name {
+}
+
+.file-name {
     margin-top: 5px;
     font-size: 0.9em;
     color: #666;
-    }
-    .remove-btn {
+}
+
+.remove-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -555,14 +643,16 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    }
-    .add-btn-container {
+}
+
+.add-btn-container {
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 60px;
-    }
-    .add-btn {
+}
+
+.add-btn {
     background: var(--secondary-color);
     color: white;
     border: none;
@@ -574,17 +664,20 @@
     align-items: center;
     cursor: pointer;
     transition: transform 0.3s;
-    }
-    .add-btn:hover {
+}
+
+.add-btn:hover {
     transform: rotate(90deg);
-    }
-    .buttons {
+}
+
+.buttons {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
-    }
-    .buttons button {
+}
+
+.buttons button {
     padding: 10px 20px;
     background: var(--button-color);
     color: white;
@@ -592,21 +685,25 @@
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.3s;
-    }
-    .buttons button:hover {
+}
+
+.buttons button:hover {
     transform: scale(1.05);
-    }
-    .theme-options {
+}
+
+.theme-options {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 10px;
     margin-top: 10px;
-    }
-    .color-option {
+}
+
+.color-option {
     display: flex;
     justify-content: center;
-    }
-    .color-preview {
+}
+
+.color-preview {
     width: 25px;
     height: 25px;
     border-radius: 4px;
@@ -615,27 +712,64 @@
     transition: all 0.2s ease;
     position: relative;
     cursor: pointer;
-    }
-    .color-preview:hover {
+}
+
+.color-preview:hover {
     transform: scale(1.1);
-    }
-    /* Checkbox-like indicator */
-    .color-preview.selected {
+}
+
+/* Checkbox-like indicator */
+.color-preview.selected {
     border: 2px solid white;
-    box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    }
-    .color-preview.selected:after {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.color-preview.selected:after {
     content: '✓';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
     font-weight: bold;
-    }
-    /* Added styles for notification popup */
-    .notification {
+}
+
+.preview_container {
+    display: none;
+    width: 80%;
+    margin-top: 20px;
+    position: relative;
+}
+
+.close-preview {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+#previewFrame {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.notification {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -652,33 +786,39 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
-    }
-    .notification.show {
+}
+
+.notification.show {
     opacity: 1;
     visibility: visible;
-    }
-    .notification i {
+}
+
+.notification i {
     margin-right: 10px;
     color: var(--primary-color);
-    }
-    .notification-content {
+}
+
+.notification-content {
     flex: 1;
-    }
-    .notification-close {
+}
+
+.notification-close {
     margin-left: 10px;
     cursor: pointer;
     color: #999;
     transition: color 0.2s;
-    }
-    .notification-close:hover {
+}
+
+.notification-close:hover {
     color: #333;
-    }
-    /* Projects list styling */
-    .projects-list {
+}
+
+.projects-list {
     margin-top: 15px;
     width: 100%;
-    }
-    .project-item {
+}
+
+.project-item {
     display: flex;
     align-items: center;
     padding: 10px;
@@ -687,65 +827,108 @@
     background: #f5f5f5;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
-    }
-    .project-item:hover {
+}
+
+.project-item:hover {
     background: #e8e8e8;
     transform: translateX(5px);
-    }
-    .project-icon {
+}
+
+.project-icon {
     margin-right: 10px;
     color: var(--primary-color);
     width: 20px;
     text-align: center;
-    }
-    .project-title {
+}
+
+.project-title {
     font-size: 0.95rem;
     color: #333;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    }
-    .projects-header {
+}
+
+.projects-header {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     margin-top: 15px;
     border-top: 1px solid #e0e0e0;
     padding-top: 15px;
-    }
-    .projects-header i {
+}
+
+.projects-header i {
     margin-right: 10px;
     color: var(--primary-color);
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+}
+
+.dropdown-header i {
+    margin-right: 10px;
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+body.night-mode .dropdown-header {
+    border-bottom: 1px solid #4a5568;
+}
+
+body.night-mode .dropdown-header i {
+    color: #63b3ed;
+}
+
+#username-display {
+    font-weight: bold;
+    color: #000000;
+    font-size: 26px;
+    text-align: center;
+    display: block;
+    margin: 10px auto;
+}
+
+@media (max-width: 992px) {
+    .container {
+        flex-direction: column;
     }
-    /* Add these CSS styles to your existing stylesheet */
-   .dropdown-header {
-   display: flex;
-   align-items: center;
-   padding: 15px;
-   border-bottom: 1px solid #eee;
-   font-weight: bold;
-   }
+    
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        flex-direction: row;
+        padding: 10px;
+    }
+    
+    .sidebar.expanded {
+        width: 100%;
+    }
+    
+    .sidebar-settings {
+        width: 100%;
+    }
+    
+    .left-section, 
+    .right-section {
+        width: 100%;
+        min-height: auto;
+    }
+}
 
-   .dropdown-header i {
-   margin-right: 10px;
-   color: var(--primary-color);
-   width: 20px;
-   text-align: center;
-   }
-
-   body.night-mode .dropdown-header {
-   border-bottom: 1px solid #4a5568;
-   }
-
-   body.night-mode .dropdown-header i {
-   color: #63b3ed;
-   }
-
-   #username-display {
-   font-weight: bold;
-   color: #000000;
-   font-size: 26px;          /* Increases text size */
-   text-align: center;       /* Aligns the text inside the element */
-   display: block;           /* Ensures it behaves like a block for centering */
-   margin: 10px auto;        /* Centers it horizontally (if width is not 100%) */
+@media (max-width: 768px) {
+    .profile-section {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .calvin {
+        margin: 0 auto;
+    }
 }

@@ -1,0 +1,10 @@
+/index.html
+/destinations.html
+/activities.html
+/about.html
+/contact.html
+/homepage.css
+/homepage.js
+/images/destination1.jpg
+/images/destination2.jpg
+/images/destination3.jpg

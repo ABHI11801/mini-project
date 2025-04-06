@@ -9,9 +9,6 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
       <link rel="stylesheet" href="/css/index_styles.css">
-
-      
-      
    </head>
    <body>
       <div class="maincontainer">
@@ -49,131 +46,118 @@
               </div>
             </div>
          </div>
-         <div class="container">
-            <div class="sidebar" id="sidebar">
-               <div class="menu-toggle" onclick="toggleSidebar()">
-                  <div class="bar"></div>
-                  <div class="bar"></div>
-                  <div class="bar"></div>
+         <div class="subcontainer">
+            <div class="container">
+               <div class="sidebar" id="sidebar">
+                  <div class="menu-toggle" onclick="toggleSidebar()">
+                     <div class="bar"></div>
+                     <div class="bar"></div>
+                     <div class="bar"></div>
+                  </div>
+                  <div class="sidebar-settings">
+                     <div class="settings-item" id="new-project-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>New Project</span>
+                     </div>
+                     <!-- Recent Projects Section added to the sidebar -->
+                     <div class="projects-header">
+                        <i class="fas fa-folder"></i>
+                        <span><b>RECENT PROJECTS</b></span>
+                     </div>
+                     <div class="projects-list">
+                        <!-- Projects will be loaded here dynamically -->
+                        <div class="project-item">
+                           <div class="project-icon">
+                              <i class="fas fa-spinner fa-spin"></i>
+                           </div>
+                           <div class="project-details">
+                              <div class="project-title">Loading projects...</div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
                </div>
-               <div class="sidebar-settings">
-                  <div class="settings-item" id="new-project-btn">
-                     <i class="fas fa-plus-circle"></i>
-                     <span>New Project</span>
-                  </div>
-                  <!-- Recent Projects Section added to the sidebar -->
-                  <div class="projects-header">
-                     <i class="fas fa-folder"></i>
-                     <span><b>RECENT PROJECTS</b></span>
-                  </div>
-                  <div class="projects-list">
-                     <div class="project-item">
-                        <div class="project-icon">
-                           <i class="fas fa-file-code"></i>
-                        </div>
-                        <div class="project-title">Personal Portfolio</div>
-                     </div>
-                     <div class="project-item">
-                        <div class="project-icon">
-                           <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="project-title">E-Commerce Dashboard</div>
-                     </div>
-                     <div class="project-item">
-                        <div class="project-icon">
-                           <i class="fas fa-blog"></i>
-                        </div>
-                        <div class="project-title">Blog Template</div>
-                     </div>
-                     <div class="project-item">
-                        <div class="project-icon">
-                           <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="project-title">Analytics Dashboard</div>
-                     </div>
-                     <div class="project-item">
-                        <div class="project-icon">
-                           <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <div class="project-title">Mobile App Landing</div>
+               <div class="left-section">
+                  <div class="project-title-container">
+                     <label for="project-title"><b>PROJECT TITLE</b></label>
+                     <div class="editable-title-wrapper">
+                        <input type="text" id="project-title" value="Untitled" class="project-title-input">
+                        <button class="edit-title-btn" id="edit-title-btn">
+                        <i class="fas fa-pencil-alt"></i>
+                        </button>
                      </div>
                   </div>
+                  <label for="llm-selection"><b>Select LLM:</b></label>
+                  <select id="llm-selection">
+                     <option value="openai">🔹 OpenAI</option>
+                     <option value="gemini">✨ Gemini</option>
+                     <option value="deepseek">✨ deepseek</option>
+                  </select>
+                  <label><b>THEMES</b></label>
+                  <div class="theme-options">
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #6a11cb; cursor: pointer;" onclick="toggleColor(this, '#6a11cb')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #2575fc; cursor: pointer;" onclick="toggleColor(this, '#2575fc')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #ff4500; cursor: pointer;" onclick="toggleColor(this, '#ff4500')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #008000; cursor: pointer;" onclick="toggleColor(this, '#008000')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #ff0000; cursor: pointer;" onclick="toggleColor(this, '#ff0000')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #ffff00; cursor: pointer;" onclick="toggleColor(this, '#ffff00')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #800080; cursor: pointer;" onclick="toggleColor(this, '#800080')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #00ffff; cursor: pointer;" onclick="toggleColor(this, '#00ffff')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #ffc0cb; cursor: pointer;" onclick="toggleColor(this, '#ffc0cb')"></span>
+                     </div>
+                     <div class="color-option">
+                        <span class="color-preview" style="background-color: #000000; cursor: pointer;" onclick="toggleColor(this, '#000000')"></span>
+                     </div>
+                  </div>
+                  <label><b>STATUS</b></label>
+                  <div class="progress-container">
+                     <div class="progress-bar" id="generation-progress"></div>
+                  </div>
+               </div>
+               <div class="right-section">
+                  <div class="prompt-container" id="prompt-container">
+                     <div class="prompt-box">
+                        <input type="text" class="title-input" placeholder="Enter page title">
+                        <textarea placeholder="Enter page content"></textarea>
+                        <label class="file-upload-label">
+                        <input type="file" class="file-input">
+                        <span>Upload File</span>
+                        </label>
+                        <div class="file-name"></div>
+                     </div>
+                     <div class="add-btn-container">
+                        <button class="add-btn" onclick="addPrompt()">+</button>
+                     </div>
+                  </div>
+                  <div class="buttons">
+                     <button onclick="generateWebContent()">Generate</button>
+                     <button onclick="showPreview()">Preview</button>
+                     <button onclick="downloadZip()">Download</button>
+                 </div>
                </div>
             </div>
-            <div class="left-section">
-               <div class="project-title-container">
-                  <label for="project-title"><b>PROJECT TITLE</b></label>
-                  <div class="editable-title-wrapper">
-                     <input type="text" id="project-title" value="Untitled" class="project-title-input">
-                     <button class="edit-title-btn" id="edit-title-btn">
-                     <i class="fas fa-pencil-alt"></i>
-                     </button>
-                  </div>
-               </div>
-               <label for="llm-selection"><b>Select LLM:</b></label>
-               <select id="llm-selection">
-                  <option value="openai">🔹 OpenAI</option>
-                  <option value="gemini">✨ Gemini</option>
-                  <option value="custom">⚙️ Custom Model</option>
-               </select>
-               <label><b>THEMES</b></label>
-               <div class="theme-options">
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #6a11cb; cursor: pointer;" onclick="toggleColor(this, '#6a11cb')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #2575fc; cursor: pointer;" onclick="toggleColor(this, '#2575fc')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #ff4500; cursor: pointer;" onclick="toggleColor(this, '#ff4500')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #008000; cursor: pointer;" onclick="toggleColor(this, '#008000')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #ff0000; cursor: pointer;" onclick="toggleColor(this, '#ff0000')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #ffff00; cursor: pointer;" onclick="toggleColor(this, '#ffff00')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #800080; cursor: pointer;" onclick="toggleColor(this, '#800080')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #00ffff; cursor: pointer;" onclick="toggleColor(this, '#00ffff')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #ffc0cb; cursor: pointer;" onclick="toggleColor(this, '#ffc0cb')"></span>
-                  </div>
-                  <div class="color-option">
-                     <span class="color-preview" style="background-color: #000000; cursor: pointer;" onclick="toggleColor(this, '#000000')"></span>
-                  </div>
-               </div>
-               <label><b>STATUS</b></label>
-               <div class="progress-container">
-                  <div class="progress-bar" id="generation-progress"></div>
-               </div>
-            </div>
-            <div class="right-section">
-               <div class="prompt-container" id="prompt-container">
-                  <div class="prompt-box">
-                     <input type="text" class="title-input" placeholder="Enter page title">
-                     <textarea placeholder="Enter page content"></textarea>
-                     <label class="file-upload-label">
-                     <input type="file" class="file-input">
-                     <span>Upload File</span>
-                     </label>
-                     <div class="file-name"></div>
-                  </div>
-                  <div class="add-btn-container">
-                     <button class="add-btn" onclick="addPrompt()">+</button>
-                  </div>
-               </div>
-               <div class="buttons">
-                    <button onclick="generateWebContent()">Generate</button>
-                    <button onclick="downloadZip()">Download</button>
-                </div>
-            </div>
+            <div class="preview_container" id="previewContainer">
+               <div class="close-preview" onclick="closePreview()">×</div>
+               <iframe id="previewFrame" src="/output/index.html"></iframe>
+             </div>
+             
          </div>
       </div>
       <div class="notification" id="notification">
@@ -183,7 +167,7 @@
          </div>
          <div class="notification-close" onclick="closeNotification()">×</div>
       </div>
+      
       <script src="/scripts/index_script.js"></script>
-
    </body>
 </html>

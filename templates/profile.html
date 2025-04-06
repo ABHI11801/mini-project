@@ -32,8 +32,8 @@
                             </div>
                             <input type="file" id="avatar-upload" class="avatar-upload">
                         </div>
-                        <div class="profile-name" id="display-name">John Doe</div>
-                        <div class="profile-email" id="display-email">john.doe@example.com</div>
+                        <div class="profile-name" id="display-name">Loading...</div>
+                        <div class="profile-email" id="display-email">Loading...</div>
                     </div>
                     
                     <ul class="nav-items">
@@ -63,19 +63,15 @@
                         <h2>Account Settings</h2>
                         <div class="form-group">
                             <label for="fullname">Full Name</label>
-                            <input type="text" id="fullname" class="form-control" value="John Doe">
+                            <input type="text" id="fullname" class="form-control" value="">
                         </div>
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" class="form-control" value="john.doe@example.com">
+                            <input type="email" id="email" class="form-control" value="">
                         </div>
                         <div class="form-group">
                             <label for="username">Username</label>
-                            <input type="text" id="username" class="form-control" value="johndoe">
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" class="form-control" value="********">
+                            <input type="text" id="username" class="form-control" value="">
                         </div>
                     </div>
                     
@@ -174,7 +170,12 @@
                                 <option value="365">1 Year</option>
                                 <option value="forever">Forever</option>
                             </select>
-                        </div>      
+                        </div>
+                        
+                        <h3 style="margin-top: 30px; margin-bottom: 15px;">Password</h3>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <button class="btn" onclick="showPasswordChangeModal()">Change Password</button>
+                        </div>
                     </div>                       
                     <div class="settings-section" id="delete-account-section" style="display: none;">
                         <div class="form-group" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
@@ -197,7 +198,6 @@
                     
                 </div>
                 <div class="btn-container">
-                    <button class="btn btn-secondary" onclick="resetForm()">Cancel</button>
                     <button class="btn" onclick="saveChanges()">Save Changes</button>
                 </div>
             </div>
@@ -210,6 +210,29 @@
             <p id="notification-message">Settings saved successfully!</p>
         </div>
         <div class="notification-close" onclick="closeNotification()">×</div>
+    </div>
+    
+    <!-- Password Change Modal -->
+    <div id="password-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 10px; padding: 25px; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;">
+            <h3 style="margin-bottom: 15px;">Change Password</h3>
+            <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" class="form-control" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" class="form-control" placeholder="New password">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm New Password</label>
+                <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password">
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button onclick="hidePasswordChangeModal()" class="btn btn-secondary" style="margin-right: 10px;">Cancel</button>
+                <button onclick="confirmPasswordChange()" class="btn">Confirm</button>
+            </div>
+        </div>
     </div>
     <script src="/scripts/profile_script.js"></script>
 </body>
