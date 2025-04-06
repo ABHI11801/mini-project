@@ -136,7 +136,6 @@ app.post("/generate", async (req, res) => {
             const token = process.env.DEEPSEEK;
             console.log("Calling DeepSeek API");
             
-            // Make sure you have the correct endpoint
             const endpoint = getApiEndpoint(llm);
             const apiKey = getApiKey(llm);
             
@@ -146,7 +145,6 @@ app.post("/generate", async (req, res) => {
                     new AzureKeyCredential(token)
                 );
         
-                // Log the request for debugging
                 console.log("Request body:", JSON.stringify(requestBody, null, 2));
         
                 const response = await client.path("/chat/completions").post({
@@ -158,7 +156,6 @@ app.post("/generate", async (req, res) => {
                     throw new Error(JSON.stringify(response.body.error || response.body));
                 }
         
-                // Log the full response for debugging
                 console.log("DeepSeek response:", JSON.stringify(response.body, null, 2));
         
                 const generatedCode = response.body.choices[0].message.content;
@@ -225,7 +222,6 @@ db.connect((err) => {
     console.log('Connected to database');
 });
 
-// API endpoint to save project and page data
 app.post('/api/save-project', (req, res) => {
     const { proj_name, user_id, pages } = req.body;
     console.log('Received save-project request:', { proj_name, user_id, pages });
@@ -282,7 +278,7 @@ app.post('/api/save-project', (req, res) => {
         }
     );
 });
-// 🚀 Signup Route
+
 app.post('/api/signup', async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -301,7 +297,6 @@ app.post('/api/signup', async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Email already registered' });
             }
 
-            // Hash password
             const hashedPassword = await bcrypt.hash(password, 10);
 
             db.query('INSERT INTO users (user_name, user_email, user_password) VALUES (?, ?, ?)', [username, email, hashedPassword], (err) => {
@@ -319,7 +314,6 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
-// 🚀 Login Route
 app.post("/api/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -411,7 +405,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.send('File uploaded successfully to output folder.');
 });
 
-// Route to handle email verification
 app.post('/api/check-email', async (req, res) => {
     const { user_email } = req.body;
     
@@ -434,7 +427,7 @@ app.post('/api/check-email', async (req, res) => {
 app.get('/forgot.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'templates', 'forgot.html'));
 });
-// Add email configuration
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -442,15 +435,13 @@ const transporter = nodemailer.createTransport({
         pass: 'xrdt xbsn ovhx kmam'
     }
 });
-// Update the generate-code endpoint
+
 app.post('/api/generate-code', async (req, res) => {
     const { user_email } = req.body;
     
     try {
-        // Generate a 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         
-        // Store code in database (expires in 10 minutes)
         db.query(
             'INSERT INTO verification_codes (user_email, verification_code, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))',
             [user_email, code],
@@ -460,7 +451,6 @@ app.post('/api/generate-code', async (req, res) => {
                     return res.status(500).json({ message: 'Server error' });
                 }
                 
-                // Send email with verification code
                 const mailOptions = {
                     from: 'noreplywebgen@gmail.com',
                     to: user_email,
@@ -491,7 +481,7 @@ app.post('/api/generate-code', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-// Verify code
+
 app.post('/api/verify-code', async (req, res) => {
     const { user_email, code } = req.body;
     
@@ -506,7 +496,6 @@ app.post('/api/verify-code', async (req, res) => {
                 }
                 
                 if (results.length > 0) {
-                    // Don't mark code as used yet - it will be used in the reset-password step
                     res.status(200).json({ message: 'Code verified' });
                 } else {
                     res.status(400).json({ message: 'Invalid or expired code' });
@@ -518,7 +507,7 @@ app.post('/api/verify-code', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-// Reset password endpoint
+
 app.post('/api/reset-password', async (req, res) => {
     const { user_email, code, new_password } = req.body;
     
@@ -527,7 +516,6 @@ app.post('/api/reset-password', async (req, res) => {
     }
     
     try {
-        // First verify the code
         db.query(
             'SELECT * FROM verification_codes WHERE user_email = ? AND verification_code = ? AND is_used = FALSE AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
             [user_email, code],
@@ -540,10 +528,8 @@ app.post('/api/reset-password', async (req, res) => {
                     return res.status(400).json({ message: 'Invalid or expired code' });
                 }
                 
-                // Hash the new password
                 const hashedPassword = await bcrypt.hash(new_password, 10);
                 
-                // Update the password
                 db.query(
                     'UPDATE users SET user_password = ? WHERE user_email = ?',
                     [hashedPassword, user_email],
@@ -552,7 +538,6 @@ app.post('/api/reset-password', async (req, res) => {
                             return res.status(500).json({ message: 'Server error' });
                         }
                         
-                        // Mark the code as used
                         db.query(
                             'UPDATE verification_codes SET is_used = TRUE WHERE code_id = ?',
                             [results[0].code_id]
@@ -567,7 +552,7 @@ app.post('/api/reset-password', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-// Middleware to verify JWT token
+
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     
@@ -583,7 +568,7 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ message: 'Invalid token' });
     }
 };
-// Get user profile
+
 app.get('/api/user-profile', verifyToken, (req, res) => {
     const userId = req.user.user_id;
     
@@ -602,7 +587,7 @@ app.get('/api/user-profile', verifyToken, (req, res) => {
         });
     });
 });
-// Update user profile
+
 app.post('/api/update-profile', verifyToken, async (req, res) => {
     const userId = req.user.user_id;
     const { username, email } = req.body;
@@ -623,7 +608,7 @@ app.post('/api/update-profile', verifyToken, async (req, res) => {
         }
     );
 });
-// Delete user account
+
 app.delete('/api/delete-account', verifyToken, (req, res) => {
     const userId = req.user.user_id;
     
@@ -635,7 +620,7 @@ app.delete('/api/delete-account', verifyToken, (req, res) => {
         res.status(200).json({ message: 'Account deleted successfully' });
     });
 });
-// Update password
+
 app.post('/api/update-password', verifyToken, async (req, res) => {
     const userId = req.user.user_id;
     const { currentPassword, newPassword } = req.body;
@@ -645,7 +630,6 @@ app.post('/api/update-password', verifyToken, async (req, res) => {
     }
     
     try {
-        // Get user's current password
         db.query('SELECT user_password FROM users WHERE user_id = ?', [userId], async (err, results) => {
             if (err) {
                 return res.status(500).json({ message: 'Server error' });
@@ -655,17 +639,14 @@ app.post('/api/update-password', verifyToken, async (req, res) => {
                 return res.status(404).json({ message: 'User not found' });
             }
             
-            // Verify current password
             const isMatch = await bcrypt.compare(currentPassword, results[0].user_password);
             
             if (!isMatch) {
                 return res.status(401).json({ message: 'Current password is incorrect' });
             }
             
-            // Hash new password
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             
-            // Update password
             db.query(
                 'UPDATE users SET user_password = ? WHERE user_id = ?',
                 [hashedPassword, userId],
@@ -682,7 +663,7 @@ app.post('/api/update-password', verifyToken, async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-// API endpoint to fetch all projects for a user
+
 app.get('/api/user-projects', (req, res) => {
     console.log('User projects API called');
     const token = req.headers.authorization?.split(' ')[1];
@@ -720,7 +701,6 @@ app.get('/api/user-projects', (req, res) => {
     }
 });
 
-// API endpoint to fetch a specific project by ID
 app.get('/api/project/:id', (req, res) => {
     const projectId = req.params.id;
     console.log('Fetching project with ID:', projectId);
@@ -729,7 +709,6 @@ app.get('/api/project/:id', (req, res) => {
         return res.status(400).json({ error: 'Project ID is required' });
     }
     
-    // First, get the project details
     db.query(
         'SELECT * FROM projects WHERE proj_id = ?',
         [projectId],
@@ -747,7 +726,6 @@ app.get('/api/project/:id', (req, res) => {
             const project = projectResults[0];
             console.log('Project found:', project);
             
-            // Then, get all pages for this project
             db.query(
                 'SELECT * FROM pages WHERE proj_id = ? ORDER BY pages_order_index',
                 [projectId],
@@ -769,12 +747,9 @@ app.get('/api/project/:id', (req, res) => {
         }
     );
 });
-
-// Function to check database schema
 app.get('/api/check-schema', (req, res) => {
     console.log('Checking database schema...');
     
-    // Check projects table
     db.query('DESCRIBE projects', (err, results) => {
         if (err) {
             console.error('Error checking projects table:', err);
@@ -783,7 +758,6 @@ app.get('/api/check-schema', (req, res) => {
         
         console.log('Projects table schema:', results);
         
-        // Check if there are any projects
         db.query('SELECT COUNT(*) as count FROM projects', (err, countResults) => {
             if (err) {
                 console.error('Error counting projects:', err);
@@ -792,7 +766,6 @@ app.get('/api/check-schema', (req, res) => {
             
             console.log('Total projects count:', countResults[0].count);
             
-            // Get a sample project if any exist
             if (countResults[0].count > 0) {
                 db.query('SELECT * FROM projects LIMIT 1', (err, sampleResults) => {
                     if (err) {
@@ -819,7 +792,6 @@ app.get('/api/check-schema', (req, res) => {
     });
 });
 
-// API endpoint to update an existing project
 app.post('/api/update-project', (req, res) => {
     const { proj_id, proj_name, user_id, pages } = req.body;
     console.log('Received update-project request:', { proj_id, proj_name, user_id, pages });
@@ -828,8 +800,6 @@ app.post('/api/update-project', (req, res) => {
         console.log('Missing required fields:', { proj_id, proj_name, user_id });
         return res.status(400).json({ error: 'Project ID, name, and user ID are required' });
     }
-
-    // First update the project name
     db.query(
         'UPDATE projects SET proj_name = ? WHERE proj_id = ? AND user_id = ?',
         [proj_name, proj_id, user_id],
@@ -844,8 +814,6 @@ app.post('/api/update-project', (req, res) => {
             }
 
             console.log('Project updated with ID:', proj_id);
-
-            // Delete existing pages for this project
             db.query('DELETE FROM pages WHERE proj_id = ?', [proj_id], (err) => {
                 if (err) {
                     console.error('Error deleting existing pages:', err.stack);
@@ -853,7 +821,6 @@ app.post('/api/update-project', (req, res) => {
                 }
 
                 if (pages && pages.length > 0) {
-                    // Insert new pages
                     const pagePromises = pages.map((page, index) =>
                         new Promise((resolve, reject) => {
                             db.query(
@@ -889,7 +856,6 @@ app.post('/api/update-project', (req, res) => {
         }
     );
 });
-// API endpoint to delete a project
 app.delete('/api/project/:id', (req, res) => {
     const projectId = req.params.id;
     const token = req.headers.authorization?.split(' ')[1];
@@ -901,8 +867,6 @@ app.delete('/api/project/:id', (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImthaXRvIiwiZW1haWwiOiJrYWl0b0BleGFtcGxlLmNvbSIsImlhdCI6MTcxMDk5NzQyMywiZXhwIjoxNzEwOTk3ODIzfQ.GKpJ-KD4qNViLfdFbUeVw7xMOeFvIYwBGqNoVa_XvD0");
         const userId = decoded.user_id;
-
-        // Check if the project exists and belongs to the user
         db.query('SELECT * FROM projects WHERE proj_id = ? AND user_id = ?', [projectId, userId], (err, results) => {
             if (err) {
                 console.error('Error checking project:', err);
@@ -912,15 +876,11 @@ app.delete('/api/project/:id', (req, res) => {
             if (results.length === 0) {
                 return res.status(404).json({ error: 'Project not found or unauthorized' });
             }
-
-            // Delete the project
             db.query('DELETE FROM projects WHERE proj_id = ?', [projectId], (err) => {
                 if (err) {
                     console.error('Error deleting project:', err);
                     return res.status(500).json({ error: 'Error deleting project', details: err.message });
                 }
-
-                // Delete associated pages
                 db.query('DELETE FROM pages WHERE proj_id = ?', [projectId], (err) => {
                     if (err) {
                         console.error('Error deleting pages:', err);
