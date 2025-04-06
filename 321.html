@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Webpage Generator</title>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
+      <style>
+         :root {
+         --primary-color: #6a11cb;
+         --secondary-color: #2575fc;
+         --background-gradient: linear-gradient(135deg, #6a11cb, #2575fc);
+         --button-color: #6a11cb;
+         }
+         * {
+         box-sizing: border-box;
+         margin: 0;
+         padding: 0;
+         }
+         body {
+         font-family: 'Arial', sans-serif;
+         background: var(--background-gradient);
+         color: white;
+         min-height: 100vh;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         overflow: hidden;
+         }
+         .background-overlay {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: rgba(0,0,0,0.1);
+         pointer-events: none;
+         z-index: -1;
+         }
+         .maincontainer{
+         display: flex;
+         flex-direction: column;
+         width: 100%;
+         align-items: center;
+         height: 100vh;
+         }
+         .container {
+         width: 90%;
+         max-width: 90%;
+         height: 70%;
+         background: white;
+         border-radius: 20px;
+         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+         display: flex;
+         overflow: hidden;
+         position: relative;
+         }
+         .sidebar {
+         width: 80px;
+         background: #f4f4f4;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         padding: 20px 0;
+         transition: width 0.3s ease;
+         position: relative;
+         z-index: 10;
+         color: #333;
+         }
+         .sidebar.expanded {
+         width: 250px;
+         }
+         .calvin{
+         padding-right: 65%;
+         font-family: "Sigmar", sans-serif;
+         font-weight: 400;
+         font-style: normal;
+         font-size: 5vw;
+         }
+         /* Add this to your existing CSS styles */
+         /* Night mode toggle button styling - increased size and adjusted positioning */
+         .night-mode-toggle {
+         width: 50px;
+         height: 50px;
+         border-radius: 50%;
+         background: var(--primary-color);
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         color: white;
+         font-size: 24px;
+         cursor: pointer;
+         transition: transform 0.2s, background-color 0.3s;
+         margin-right: 20px;
+         box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+         }
+         .night-mode-toggle:hover {
+         transform: scale(1.08);
+         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+         }
+         /* More aesthetic night mode styles with softer colors */
+         body.night-mode {
+         background: linear-gradient(135deg, #2d3748, #1a365d);
+         }
+         body.night-mode .container {
+         background: #2d3748;
+         box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+         border: 1px solid #4a5568;
+         }
+         body.night-mode .sidebar {
+         background: #1a202c;
+         border-right: 1px solid #4a5568;
+         }
+         body.night-mode .left-section {
+         background: #2d3748;
+         color: #e2e8f0;
+         }
+         body.night-mode .right-section {
+         color: #e2e8f0;
+         }
+         body.night-mode .profile-dropdown {
+         background: #2d3748;
+         border: 1px solid #4a5568;
+         }
+         body.night-mode .dropdown-item {
+         color: #e2e8f0;
+         border-bottom: 1px solid #4a5568;
+         }
+         body.night-mode .dropdown-item:hover {
+         background: #4a5568;
+         }
+         body.night-mode .prompt-box {
+         background: #4a5568;
+         border: 1px solid #718096;
+         }
+         body.night-mode .title-input, 
+         body.night-mode textarea {
+         background: #2d3748;
+         color: #e2e8f0;
+         border: 1px solid #718096;
+         }
+         body.night-mode .file-upload-label {
+         background: #2d3748;
+         color: #e2e8f0;
+         border: 1px dashed #718096;
+         }
+         body.night-mode .project-item {
+         background: #4a5568;
+         }
+         body.night-mode .project-item:hover {
+         background: #718096;
+         }
+         body.night-mode .project-title {
+         color: #e2e8f0;
+         }
+         body.night-mode .settings-item:hover {
+         background: #4a5568;
+         }
+         body.night-mode .notification {
+         background-color: rgba(45, 55, 72, 0.9);
+         color: #e2e8f0;
+         border: 1px solid #718096;
+         }
+         body.night-mode .notification-close:hover {
+         color: #e2e8f0;
+         }
+         /* Add some nice transitions for smoother toggle experience */
+         body, .container, .sidebar, .left-section, .right-section, 
+         .profile-dropdown, .prompt-box, .title-input, textarea, 
+         .file-upload-label, .project-item {
+         transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+         }
+         /* Additional styles to enhance the dark mode aesthetics */
+         body.night-mode h2, 
+         body.night-mode h5,
+         body.night-mode .calvin {
+         color: #90cdf4;
+         }
+         body.night-mode .buttons button {
+         background: #63b3ed;
+         }
+         body.night-mode .progress-container {
+         background-color: #4a5568;
+         }
+         body.night-mode .add-btn {
+         background: #63b3ed;
+         }
+         /* Adjust the placement within the profile section */
+         .profile-section {
+         justify-content: flex-end;
+         align-items: center;
+         }
+         /* Additional night mode styles for consistent appearance */
+         /* Profile avatar in night mode */
+         body.night-mode .profile-avatar {
+         background: #4a5568;
+         box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+         }
+         /* Progress bar in night mode */
+         body.night-mode .progress-bar {
+         background-color: #63b3ed; /* Lighter blue for contrast */
+         }
+         /* Select dropdown in night mode */
+         body.night-mode select {
+         background-color: #2d3748;
+         color: #e2e8f0;
+         border: 1px solid #4a5568;
+         }
+         body.night-mode select option {
+         background-color: #2d3748;
+         color: #e2e8f0;
+         }
+         /* Menu bars in night mode */
+         body.night-mode .menu-toggle .bar {
+         background: #e2e8f0;
+         }
+         /* Night mode toggle button in night mode */
+         body.night-mode .night-mode-toggle {
+         background: #63b3ed;
+         box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+         }
+         /* Sidebar elements in night mode */
+         body.night-mode .sidebar i {
+         color: #63b3ed;
+         }
+         body.night-mode .settings-item {
+         color: #e2e8f0;
+         }
+         body.night-mode .calvin {
+         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+         }
+         /* Add button in night mode */
+         body.night-mode .add-btn {
+         background: #4299e1;
+         box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+         }
+         /* Remove button in night mode */
+         body.night-mode .remove-btn {
+         background: #e53e3e; /* Red shade that matches dark theme */
+         }
+         /* File upload label adjustments */
+         body.night-mode .file-upload-label span {
+         color: #e2e8f0;
+         }
+         body.night-mode .file-name {
+         color: #a0aec0;
+         }
+         /* Improve color preview visibility in dark mode */
+         body.night-mode .color-preview {
+         border: 2px solid #4a5568;
+         }
+         body.night-mode .color-preview.selected {
+         border: 2px solid #63b3ed;
+         box-shadow: 0 0 5px rgba(0,0,0,0.5);
+         }
+         /* Text labels to ensure visibility */
+         body.night-mode label {
+         color: #e2e8f0;
+         }
+         /* Ensure all icons are visible */
+         body.night-mode i {
+         color: #e2e8f0;
+         }
+         /* Keep primary elements' icons in their original color scheme */
+         body.night-mode .projects-header i,
+         body.night-mode .settings-item i,
+         body.night-mode .dropdown-item i,
+         body.night-mode .project-icon i {
+         color: #63b3ed;
+         }
+         .profile-section {
+         display: flex;
+         flex-direction: row;
+         align-items: right;
+         justify-content: end;
+         width: 100%;
+         padding: 20px 10px;
+         position: relative;
+         }
+         .profile-avatar {
+         width: 80px;
+         height: 80px;
+         border-radius: 50%;
+         background: var(--primary-color);
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         color: white;
+         font-size: 40px;
+         margin-bottom: 15px;
+         cursor: pointer;
+         transition: transform 0.2s;
+         }
+         .profile-avatar:hover {
+         transform: scale(1.05);
+         }
+         /* Profile Dropdown Menu */
+         .profile-dropdown {
+         position: absolute;
+         top: 110px;
+         right: 10px;
+         width: 200px;
+         background: white;
+         border-radius: 10px;
+         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+         z-index: 100;
+         opacity: 0;
+         visibility: hidden;
+         transform: translateY(-10px);
+         transition: all 0.3s ease;
+         }
+         .profile-dropdown.active {
+         opacity: 1;
+         visibility: visible;
+         transform: translateY(0);
+         }
+         .dropdown-item {
+         display: flex;
+         align-items: center;
+         padding: 15px;
+         color: #333;
+         border-bottom: 1px solid #eee;
+         cursor: pointer;
+         transition: background 0.2s;
+         }
+         .dropdown-item:last-child {
+         border-bottom: none;
+         }
+         .dropdown-item:hover {
+         background: #f5f5f5;
+         }
+         .dropdown-item i {
+         margin-right: 10px;
+         color: var(--primary-color);
+         width: 20px;
+         text-align: center;
+         }
+         .menu-toggle {
+         position: absolute;
+         top: 15px;
+         right: 15px;
+         cursor: pointer;
+         z-index: 20;
+         }
+         .menu-toggle .bar {
+         width: 25px;
+         height: 3px;
+         background: #333;
+         margin: 5px 0;
+         transition: 0.4s;
+         }
+         .sidebar-settings {
+         width: 100%;
+         display: none;
+         padding: 0 15px;
+         }
+         .sidebar.expanded .sidebar-settings {
+         display: block;
+         }
+         .settings-item {
+         display: flex;
+         align-items: center;
+         padding: 10px;
+         cursor: pointer;
+         border-radius: 5px;
+         transition: background 0.3s;
+         }
+         .settings-item:hover {
+         background: #e0e0e0;
+         }
+         .settings-item i {
+         margin-right: 10px;
+         color: var(--primary-color);
+         }
+         #new-project-btn {
+         background-color: rgba(106, 17, 203, 0.1);
+         color: var(--primary-color);
+         font-weight: 600;
+         margin-bottom: 15px;
+         border-radius: 8px;
+         transition: all 0.3s ease;
+         }
+         #new-project-btn:hover {
+         background-color: var(--primary-color);
+         color: white;
+         transform: translateY(-2px);
+         }
+         #new-project-btn i {
+         font-size: 1.1em;
+         }
+         /* Night mode support */
+         body.night-mode #new-project-btn {
+         background-color: rgba(99, 179, 237, 0.15);
+         color: #63b3ed;
+         }
+         body.night-mode #new-project-btn:hover {
+         background-color: #4299e1;
+         color: white;
+         }
+         body.night-mode #new-project-btn i {
+         color: #63b3ed;
+         }
+         body.night-mode #new-project-btn:hover i {
+         color: white;
+         }
+         .left-section {
+         width: 30%;
+         background: #f9f9f9;
+         padding: 20px;
+         display: flex;
+         flex-direction: column;
+         gap: 20px;
+         color: #2575fc;
+         }
+         .project-title-container {
+         margin-bottom: 15px;
+         width: 100%;
+         }
+         .editable-title-wrapper {
+         display: flex;
+         align-items: center;
+         margin-top: 8px;
+         }
+         .project-title-input {
+         flex-grow: 1;
+         padding: 8px 12px;
+         border: 1px solid #ddd;
+         border-radius: 5px;
+         font-size: 1rem;
+         font-weight: 600;
+         background-color: white;
+         color: #333;
+         transition: all 0.3s ease;
+         }
+         .project-title-input:focus {
+         outline: none;
+         border-color: var(--primary-color);
+         box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
+         }
+         .project-title-input.readonly {
+         background-color: transparent;
+         border-color: transparent;
+         padding-left: 0;
+         }
+         .edit-title-btn {
+         background: none;
+         border: none;
+         color: #999;
+         cursor: pointer;
+         margin-left: 8px;
+         width: 32px;
+         height: 32px;
+         border-radius: 4px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         transition: all 0.2s ease;
+         }
+         .edit-title-btn:hover {
+         background-color: rgba(106, 17, 203, 0.1);
+         color: var(--primary-color);
+         }
+         /* Night mode support for project title */
+         body.night-mode .project-title-input {
+         background-color: #2d3748;
+         color: #e2e8f0;
+         border-color: #4a5568;
+         }
+         body.night-mode .project-title-input.readonly {
+         background-color: transparent;
+         border-color: transparent;
+         }
+         body.night-mode .edit-title-btn {
+         color: #a0aec0;
+         }
+         body.night-mode .edit-title-btn:hover {
+         background-color: rgba(99, 179, 237, 0.2);
+         color: #63b3ed;
+         }
+         .progress-container {
+         width: 100%;
+         background-color: #e0e0e0;
+         border-radius: 13px;
+         padding: 3px;
+         margin-top: 10px;
+         }
+         .progress-bar {
+         width: 0%;
+         height: 20px;
+         background-color: var(--primary-color);
+         border-radius: 10px;
+         transition: width 0.5s ease-in-out;
+         }
+         .right-section {
+         width: 70%;
+         padding: 20px;
+         position: relative;
+         }
+         .prompt-container {
+         display: flex;
+         position: relative;
+         overflow-x: auto;
+         gap: 15px;
+         padding-bottom: 20px;
+         align-items: flex-start;
+         }
+         .prompt-box {
+         min-width: 300px;
+         background: #f1f1f1;
+         border-radius: 10px;
+         padding: 15px;
+         display: flex;
+         flex-direction: column;
+         gap: 10px;
+         position: relative;
+         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+         }
+         .prompt-box .title-input {
+         width: 100%;
+         padding: 8px;
+         border: 1px solid #ddd;
+         border-radius: 5px;
+         font-weight: bold;
+         }
+         .prompt-box textarea {
+         width: 100%;
+         min-height: 200px;
+         border: 1px solid #ddd;
+         border-radius: 5px;
+         padding: 8px;
+         resize: vertical;
+         }
+         .file-upload-label {
+         display: block;
+         margin-top: 10px;
+         background: #f0f0f0;
+         border: 1px dashed #ccc;
+         padding: 10px;
+         text-align: center;
+         cursor: pointer;
+         border-radius: 5px;
+         color: #333;
+         }
+         .file-upload-label input[type="file"] {
+         display: none;
+         }
+         .file-name {
+         margin-top: 5px;
+         font-size: 0.9em;
+         color: #666;
+         }
+         .remove-btn {
+         position: absolute;
+         top: 10px;
+         right: 10px;
+         background: red;
+         color: white;
+         border: none;
+         width: 25px;
+         height: 25px;
+         border-radius: 50%;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         cursor: pointer;
+         }
+         .add-btn-container {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         min-width: 60px;
+         }
+         .add-btn {
+         background: var(--secondary-color);
+         color: white;
+         border: none;
+         width: 40px;
+         height: 40px;
+         border-radius: 50%;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         cursor: pointer;
+         transition: transform 0.3s;
+         }
+         .add-btn:hover {
+         transform: rotate(90deg);
+         }
+         .buttons {
+         display: flex;
+         justify-content: center;
+         gap: 15px;
+         margin-top: 20px;
+         }
+         .buttons button {
+         padding: 10px 20px;
+         background: var(--button-color);
+         color: white;
+         border: none;
+         border-radius: 5px;
+         cursor: pointer;
+         transition: transform 0.3s;
+         }
+         .buttons button:hover {
+         transform: scale(1.05);
+         }
+         .theme-options {
+         display: grid;
+         grid-template-columns: repeat(5, 1fr);
+         gap: 10px;
+         margin-top: 10px;
+         }
+         .color-option {
+         display: flex;
+         justify-content: center;
+         }
+         .color-preview {
+         width: 25px;
+         height: 25px;
+         border-radius: 4px;
+         display: inline-block;
+         border: 2px solid transparent;
+         transition: all 0.2s ease;
+         position: relative;
+         cursor: pointer;
+         }
+         .color-preview:hover {
+         transform: scale(1.1);
+         }
+         /* Checkbox-like indicator */
+         .color-preview.selected {
+         border: 2px solid white;
+         box-shadow: 0 0 5px rgba(0,0,0,0.3);
+         }
+         .color-preview.selected:after {
+         content: '✓';
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         color: white;
+         text-shadow: 0 0 2px rgba(0,0,0,0.5);
+         font-weight: bold;
+         }
+         /* Added styles for notification popup */
+         .notification {
+         position: fixed;
+         top: 20px;
+         left: 50%;
+         transform: translateX(-50%);
+         background-color: rgba(255, 255, 255, 0.9);
+         color: #333;
+         padding: 15px 25px;
+         border-radius: 8px;
+         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+         z-index: 1000;
+         display: flex;
+         align-items: center;
+         max-width: 300px;
+         opacity: 0;
+         visibility: hidden;
+         transition: opacity 0.3s, visibility 0.3s;
+         }
+         .notification.show {
+         opacity: 1;
+         visibility: visible;
+         }
+         .notification i {
+         margin-right: 10px;
+         color: var(--primary-color);
+         }
+         .notification-content {
+         flex: 1;
+         }
+         .notification-close {
+         margin-left: 10px;
+         cursor: pointer;
+         color: #999;
+         transition: color 0.2s;
+         }
+         .notification-close:hover {
+         color: #333;
+         }
+         /* Projects list styling */
+         .projects-list {
+         margin-top: 15px;
+         width: 100%;
+         }
+         .project-item {
+         display: flex;
+         align-items: center;
+         padding: 10px;
+         border-radius: 5px;
+         margin-bottom: 8px;
+         background: #f5f5f5;
+         cursor: pointer;
+         transition: background 0.2s, transform 0.2s;
+         }
+         .project-item:hover {
+         background: #e8e8e8;
+         transform: translateX(5px);
+         }
+         .project-icon {
+         margin-right: 10px;
+         color: var(--primary-color);
+         width: 20px;
+         text-align: center;
+         }
+         .project-title {
+         font-size: 0.95rem;
+         color: #333;
+         white-space: nowrap;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         }
+         .projects-header {
+         display: flex;
+         align-items: center;
+         margin-bottom: 10px;
+         margin-top: 15px;
+         border-top: 1px solid #e0e0e0;
+         padding-top: 15px;
+         }
+         .projects-header i {
+         margin-right: 10px;
+         color: var(--primary-color);
+         }
+         /* Add these CSS styles to your existing stylesheet */
+        .dropdown-header {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        font-weight: bold;
+        }
+
+        .dropdown-header i {
+        margin-right: 10px;
+        color: var(--primary-color);
+        width: 20px;
+        text-align: center;
+        }
+
+        body.night-mode .dropdown-header {
+        border-bottom: 1px solid #4a5568;
+        }
+
+        body.night-mode .dropdown-header i {
+        color: #63b3ed;
+        }
+
+        #username-display {
+        font-weight: bold;
+        color: #000000;
+        font-size: 26px;          /* Increases text size */
+        text-align: center;       /* Aligns the text inside the element */
+        display: block;           /* Ensures it behaves like a block for centering */
+        margin: 10px auto;        /* Centers it horizontally (if width is not 100%) */
+}
+
+      </style>
+   </head>
+   <body>
+      <div class="maincontainer">
+         <div class="background-overlay"></div>
+         <div class="profile-section">
+            <div class="calvin">
+               <h5>WebGen</h5>
+            </div>
+            <div style="display: flex; align-items: center;">
+               <div class="night-mode-toggle" onclick="toggleNightMode()">
+                  <i id="night-mode-icon" class="fas fa-moon"></i>
+               </div>
+               <div class="profile-avatar" onclick="toggleProfileMenu()">
+                  <i class="fas fa-user"></i>
+               </div>
+            </div>
+            
+            <!-- Profile Dropdown Menu -->
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="dropdown-header">
+                <i class="fas fa-user-circle"></i>
+                <span id="username-display">Username</span>
+              </div>
+              <div class="dropdown-item" onclick="window.location.href='profile.html'">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+              </div>
+              <div class="dropdown-item" onclick="window.location.href='aboutus.html'">
+                <i class="fas fa-question-circle"></i>
+                <span>Help & Support</span>
+              </div>
+              <div class="dropdown-item" id="logoutButton">
+                <i class="fas fa-power-off"></i>
+                <span>Logout</span>
+              </div>
+            </div>
+         </div>
+         <div class="container">
+            <div class="sidebar" id="sidebar">
+               <div class="menu-toggle" onclick="toggleSidebar()">
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+               </div>
+               <div class="sidebar-settings">
+                  <div class="settings-item" id="new-project-btn">
+                     <i class="fas fa-plus-circle"></i>
+                     <span>New Project</span>
+                  </div>
+                  <!-- Recent Projects Section added to the sidebar -->
+                  <div class="projects-header">
+                     <i class="fas fa-folder"></i>
+                     <span><b>RECENT PROJECTS</b></span>
+                  </div>
+                  <div class="projects-list">
+                     <div class="project-item">
+                        <div class="project-icon">
+                           <i class="fas fa-file-code"></i>
+                        </div>
+                        <div class="project-title">Personal Portfolio</div>
+                     </div>
+                     <div class="project-item">
+                        <div class="project-icon">
+                           <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="project-title">E-Commerce Dashboard</div>
+                     </div>
+                     <div class="project-item">
+                        <div class="project-icon">
+                           <i class="fas fa-blog"></i>
+                        </div>
+                        <div class="project-title">Blog Template</div>
+                     </div>
+                     <div class="project-item">
+                        <div class="project-icon">
+                           <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="project-title">Analytics Dashboard</div>
+                     </div>
+                     <div class="project-item">
+                        <div class="project-icon">
+                           <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="project-title">Mobile App Landing</div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="left-section">
+               <div class="project-title-container">
+                  <label for="project-title"><b>PROJECT TITLE</b></label>
+                  <div class="editable-title-wrapper">
+                     <input type="text" id="project-title" value="Untitled" class="project-title-input">
+                     <button class="edit-title-btn" id="edit-title-btn">
+                     <i class="fas fa-pencil-alt"></i>
+                     </button>
+                  </div>
+               </div>
+               <label for="llm-selection"><b>Select LLM:</b></label>
+               <select id="llm-selection">
+                  <option value="openai">🔹 OpenAI</option>
+                  <option value="gemini">✨ Gemini</option>
+                  <option value="custom">⚙️ Custom Model</option>
+               </select>
+               <label><b>THEMES</b></label>
+               <div class="theme-options">
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #6a11cb; cursor: pointer;" onclick="toggleColor(this, '#6a11cb')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #2575fc; cursor: pointer;" onclick="toggleColor(this, '#2575fc')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #ff4500; cursor: pointer;" onclick="toggleColor(this, '#ff4500')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #008000; cursor: pointer;" onclick="toggleColor(this, '#008000')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #ff0000; cursor: pointer;" onclick="toggleColor(this, '#ff0000')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #ffff00; cursor: pointer;" onclick="toggleColor(this, '#ffff00')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #800080; cursor: pointer;" onclick="toggleColor(this, '#800080')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #00ffff; cursor: pointer;" onclick="toggleColor(this, '#00ffff')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #ffc0cb; cursor: pointer;" onclick="toggleColor(this, '#ffc0cb')"></span>
+                  </div>
+                  <div class="color-option">
+                     <span class="color-preview" style="background-color: #000000; cursor: pointer;" onclick="toggleColor(this, '#000000')"></span>
+                  </div>
+               </div>
+               <label><b>STATUS</b></label>
+               <div class="progress-container">
+                  <div class="progress-bar" id="generation-progress"></div>
+               </div>
+            </div>
+            <div class="right-section">
+               <div class="prompt-container" id="prompt-container">
+                  <div class="prompt-box">
+                     <input type="text" class="title-input" placeholder="Enter page title">
+                     <textarea placeholder="Enter page content"></textarea>
+                     <label class="file-upload-label">
+                     <input type="file" class="file-input">
+                     <span>Upload File</span>
+                     </label>
+                     <div class="file-name"></div>
+                  </div>
+                  <div class="add-btn-container">
+                     <button class="add-btn" onclick="addPrompt()">+</button>
+                  </div>
+               </div>
+               <div class="buttons">
+                    <button onclick="generateWebContent()">Generate</button>
+                    <button onclick="downloadZip()">Download</button>
+                </div>
+            </div>
+         </div>
+      </div>
+      <!-- Notification popup -->
+      <div class="notification" id="notification">
+         <i class="fas fa-exclamation-circle"></i>
+         <div class="notification-content">
+            <p id="notification-message">You can select up to 3 colors only!</p>
+         </div>
+         <div class="notification-close" onclick="closeNotification()">×</div>
+      </div>
+      <script>
+
+function initializeProjectTitle() {
+    const titleInput = document.getElementById('project-title');
+    const editButton = document.getElementById('edit-title-btn');
+    
+    // Make title readonly by default
+    titleInput.classList.add('readonly');
+    titleInput.setAttribute('readonly', true);
+    
+    // Toggle edit mode when button is clicked
+    editButton.addEventListener('click', function() {
+        if (titleInput.hasAttribute('readonly')) {
+            // Enable editing
+            titleInput.removeAttribute('readonly');
+            titleInput.classList.remove('readonly');
+            titleInput.focus();
+            // Select all text for easy replacement
+            titleInput.select();
+        } else {
+            // Save changes and disable editing
+            titleInput.setAttribute('readonly', true);
+            titleInput.classList.add('readonly');
+        }
+    });
+    
+    // Save changes when user presses Enter
+    titleInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            titleInput.setAttribute('readonly', true);
+            titleInput.classList.add('readonly');
+        }
+    });
+    
+    // Save changes when input loses focus
+    titleInput.addEventListener('blur', function() {
+        titleInput.setAttribute('readonly', true);
+        titleInput.classList.add('readonly');
+        
+        // If title is empty, reset to "Untitled"
+        if (!titleInput.value.trim()) {
+            titleInput.value = "Untitled";
+        }
+    });
+}
+
+// Add this variable to track the currently loaded project
+let currentLoadedProjectData = null;
+
+// Function to save current project to recent projects
+function saveCurrentProject() {
+    // Get current project data
+    const projectTitle = document.getElementById('project-title').value || 'Untitled';
+    const promptBoxes = document.querySelectorAll('.prompt-box');
+    
+    // Create project content array
+    const projectContent = [];
+    promptBoxes.forEach(box => {
+        const title = box.querySelector('.title-input').value;
+        const content = box.querySelector('textarea').value;
+        const fileName = box.querySelector('.file-name').textContent;
+        
+        projectContent.push({
+            title: title,
+            content: content,
+            fileName: fileName
+        });
+    });
+    
+    // Skip saving if no content
+    if (projectContent.length === 0 || (projectContent.length === 1 && 
+        !projectContent[0].title && !projectContent[0].content && !projectContent[0].fileName)) {
+        return false;
+    }
+    
+    // If project hasn't changed from currently loaded project, don't save
+    if (currentLoadedProjectData && 
+        projectTitle === currentLoadedProjectData.title && 
+        JSON.stringify(projectContent) === JSON.stringify(currentLoadedProjectData.content)) {
+        return false;
+    }
+    
+    // Get the current user
+    const currentUser = localStorage.getItem('currentUser');
+    const storageKey = currentUser ? `recentProjects_${currentUser}` : 'recentProjects';
+    
+    // Get existing projects from localStorage
+    let recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    // Add current project to the beginning of the array
+    recentProjects.unshift({
+        title: projectTitle,
+        content: projectContent,
+        date: new Date().toISOString(),
+        icon: getRandomIcon()
+    });
+    
+    // Limit to 5 recent projects
+    if (recentProjects.length > 5) {
+        recentProjects = recentProjects.slice(0, 5);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem(storageKey, JSON.stringify(recentProjects));
+    
+    // Update the UI
+    updateRecentProjectsUI();
+    
+    return true;
+}
+
+// Function to get a random icon for the project
+function getRandomIcon() {
+    const icons = [
+        'fa-file-code', 'fa-shopping-cart', 'fa-blog', 'fa-chart-line', 
+        'fa-mobile-alt', 'fa-palette', 'fa-image', 'fa-store', 
+        'fa-envelope', 'fa-calendar'
+    ];
+    return icons[Math.floor(Math.random() * icons.length)];
+}
+
+// Function to update the recent projects UI
+function updateRecentProjectsUI() {
+    const projectsList = document.querySelector('.projects-list');
+    
+    // Get the current user
+    const currentUser = localStorage.getItem('currentUser');
+    const storageKey = currentUser ? `recentProjects_${currentUser}` : 'recentProjects';
+    
+    const recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
+    
+    // Clear current list
+    projectsList.innerHTML = '';
+    
+    // Add projects to the list
+    recentProjects.forEach((project, index) => {
+        const projectItem = document.createElement('div');
+        projectItem.className = 'project-item';
+        projectItem.dataset.index = index;
+        
+        projectItem.innerHTML = `
+            <div class="project-icon">
+                <i class="fas ${project.icon}"></i>
+            </div>
+            <div class="project-title">${project.title}</div>
+        `;
+        
+        // Add click event to load the project
+        projectItem.addEventListener('click', function() {
+            loadProject(index);
+        });
+        
+        projectsList.appendChild(projectItem);
+    });
+    
+    // If no projects, add a message
+    if (recentProjects.length === 0) {
+        const noProjects = document.createElement('div');
+        noProjects.className = 'project-item';
+        noProjects.innerHTML = `
+            <div class="project-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="project-title">No recent projects</div>
+        `;
+        projectsList.appendChild(noProjects);
+    }
+}
+
+// Function to load a project from recent projects
+function loadProject(index) {
+    // Get the current user
+    const currentUser = localStorage.getItem('currentUser');
+    const storageKey = currentUser ? `recentProjects_${currentUser}` : 'recentProjects';
+    
+    const recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const project = recentProjects[index];
+    
+    if (!project) return;
+    
+    // Store the loaded project data to compare later
+    currentLoadedProjectData = {
+        title: project.title,
+        content: JSON.parse(JSON.stringify(project.content)) // Deep copy
+    };
+    
+    // Set project title
+    const projectTitleInput = document.getElementById('project-title');
+    projectTitleInput.value = project.title;
+    
+    // Clear current prompt boxes
+    const promptContainer = document.getElementById('prompt-container');
+    promptContainer.innerHTML = '';
+    
+    // Create add button container
+    const addBtnContainer = document.createElement('div');
+    addBtnContainer.className = 'add-btn-container';
+    addBtnContainer.innerHTML = `<button class="add-btn" onclick="addPrompt()">+</button>`;
+    
+    // Add prompt boxes for each content item
+    project.content.forEach(item => {
+        const promptBox = document.createElement('div');
+        promptBox.className = 'prompt-box';
+        promptBox.innerHTML = `
+            <input type="text" class="title-input" placeholder="Enter page title" value="${item.title || ''}">
+            <textarea placeholder="Enter page content">${item.content || ''}</textarea>
+            <label class="file-upload-label">
+                <input type="file" class="file-input">
+                <span>Upload File</span>
+            </label>
+            <div class="file-name">${item.fileName || ''}</div>
+            ${project.content.length > 1 ? '<button class="remove-btn" onclick="removePrompt(this)">✖</button>' : ''}
+        `;
+        
+        // Add file upload event listener
+        const fileInput = promptBox.querySelector('.file-input');
+        const fileName = promptBox.querySelector('.file-name');
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+            }
+        });
+        
+        promptContainer.appendChild(promptBox);
+    });
+    
+    // Add the "+" button container
+    promptContainer.appendChild(addBtnContainer);
+    
+    // Show notification
+    showNotification(`Loaded project: ${project.title}`);
+}
+
+// Function to initialize new project button
+function initializeNewProjectButton() {
+    const newProjectBtn = document.getElementById('new-project-btn');
+    
+    newProjectBtn.addEventListener('click', function() {
+        // Save current project to recent projects
+        const saved = saveCurrentProject();
+        
+        // Reset project title to "Untitled"
+        const projectTitleInput = document.getElementById('project-title');
+        if (projectTitleInput) {
+            projectTitleInput.value = "Untitled";
+        }
+        
+        // Clear all prompt boxes except the first one
+        const promptContainer = document.getElementById('prompt-container');
+        promptContainer.innerHTML = '';
+        
+        // Create a new empty prompt box
+        const promptBox = document.createElement('div');
+        promptBox.className = 'prompt-box';
+        promptBox.innerHTML = `
+            <input type="text" class="title-input" placeholder="Enter page title">
+            <textarea placeholder="Enter page content"></textarea>
+            <label class="file-upload-label">
+                <input type="file" class="file-input">
+                <span>Upload File</span>
+            </label>
+            <div class="file-name"></div>
+        `;
+        
+        // Add file upload event listener
+        const fileInput = promptBox.querySelector('.file-input');
+        const fileName = promptBox.querySelector('.file-name');
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+            }
+        });
+        
+        // Create add button container
+        const addBtnContainer = document.createElement('div');
+        addBtnContainer.className = 'add-btn-container';
+        addBtnContainer.innerHTML = `<button class="add-btn" onclick="addPrompt()">+</button>`;
+        
+        // Add prompt box and add button to container
+        promptContainer.appendChild(promptBox);
+        promptContainer.appendChild(addBtnContainer);
+        
+        // Reset progress bar
+        const progressBar = document.getElementById('generation-progress');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+        }
+        
+        // Reset the currentLoadedProjectData
+        currentLoadedProjectData = null;
+        
+        // Show notification
+        if (saved) {
+            showNotification('Previous project saved and new project created');
+        } else {
+            showNotification('New project created');
+        }
+    });
+}
+// Toggle sidebar
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('expanded');
+}
+
+// Toggle profile menu dropdown
+function toggleProfileMenu() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('active');
+    
+    // Close dropdown when clicking outside
+    if (dropdown.classList.contains('active')) {
+        document.addEventListener('click', closeDropdownOnClickOutside);
+    } else {
+        document.removeEventListener('click', closeDropdownOnClickOutside);
+    }
+}
+
+// Function to toggle night mode with improved animation
+function toggleNightMode() {
+    document.body.classList.toggle('night-mode');
+    
+    // Save preference to localStorage
+    const isNightMode = document.body.classList.contains('night-mode');
+    localStorage.setItem('nightMode', isNightMode);
+    
+    // Update the icon based on current mode with animation
+    const nightModeIcon = document.getElementById('night-mode-icon');
+    const nightModeToggle = document.querySelector('.night-mode-toggle');
+    
+    // Add rotation animation
+    nightModeToggle.style.transition = 'transform 0.5s';
+    nightModeToggle.style.transform = 'rotate(180deg)';
+    
+    setTimeout(() => {
+        if (isNightMode) {
+            nightModeIcon.className = 'fas fa-sun';
+            showNotification('Dark mode enabled');
+        } else {
+            nightModeIcon.className = 'fas fa-moon';
+            showNotification('Light mode enabled');
+        }
+        
+        // Reset the rotation after changing the icon
+        setTimeout(() => {
+            nightModeToggle.style.transition = 'transform 0.2s';
+            nightModeToggle.style.transform = 'rotate(0deg)';
+        }, 150);
+    }, 250);
+}
+
+// Function to initialize night mode based on saved preference
+function initializeNightMode() {
+    // Check if night mode was previously enabled
+    const isNightMode = localStorage.getItem('nightMode') === 'true';
+    
+    if (isNightMode) {
+        document.body.classList.add('night-mode');
+        document.getElementById('night-mode-icon').className = 'fas fa-sun';
+    }
+}
+
+// Function to close dropdown when clicking outside
+function closeDropdownOnClickOutside(event) {
+    const dropdown = document.getElementById('profileDropdown');
+    const avatar = document.querySelector('.profile-avatar');
+    
+    // If click is outside the dropdown and not on the avatar
+    if (!dropdown.contains(event.target) && !avatar.contains(event.target)) {
+        dropdown.classList.remove('active');
+        document.removeEventListener('click', closeDropdownOnClickOutside);
+    }
+}
+
+// Logout function
+function logout() {
+    window.location.href = "login.html";
+}
+
+function addPrompt() {
+    const container = document.getElementById("prompt-container");
+    const addBtnContainer = container.querySelector('.add-btn-container');
+    
+    const promptBox = document.createElement("div");
+    promptBox.className = "prompt-box";
+    promptBox.innerHTML = `
+        <input type="text" class="title-input" placeholder="Enter page title">
+        <textarea placeholder="Enter page content"></textarea>
+        <label class="file-upload-label">
+            <input type="file" class="file-input">
+            <span>Upload File</span>
+        </label>
+        <div class="file-name"></div>
+        <button class="remove-btn" onclick="removePrompt(this)">✖</button>
+    `;
+    
+    // Add file upload event listener
+    const fileInput = promptBox.querySelector('.file-input');
+    const fileName = promptBox.querySelector('.file-name');
+
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files.length > 0) {
+            const file = this.files[0];
+            fileName.textContent = file.name;
+
+        // Upload the file to the backend
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error uploading file:', error));
+        }
+    });
+
+    
+    // Insert the new prompt box before the add button container
+    container.insertBefore(promptBox, addBtnContainer);
+}
+
+function removePrompt(button) {
+    const container = document.getElementById("prompt-container");
+    const promptBoxes = container.querySelectorAll('.prompt-box');
+    
+    // Prevent removing the last prompt box
+    if (promptBoxes.length > 1) {
+        button.parentElement.remove();
+    }
+}
+
+async function generateWebContent() {
+    const selectedLLM = document.getElementById('llm-selection').value;
+    const promptBoxes = document.querySelectorAll('.prompt-box');
+    const progressBar = document.getElementById('generation-progress');
+    
+    progressBar.style.width = '10%';
+    showNotification('Generating pages one by one...');
+
+    const projectTitle = document.getElementById('project-title').value;
+
+    let pageCount = 0;
+    
+    for (const box of promptBoxes) {
+        const title = box.querySelector('.title-input').value;
+        const content = box.querySelector('textarea').value;
+        const fileName = box.querySelector('.file-name').textContent;
+
+        const requestBody = {
+            llm: selectedLLM,
+            prompt: content,
+            pagename: title,
+            filename: fileName
+        };
+
+        try {
+            const response = await fetch('http://localhost:5000/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error('Server responded with status: ' + response.status);
+            }
+
+            const data = await response.json();
+            handleGeneratedContent(data);
+            pageCount++;
+
+            // Update progress dynamically
+            const progressPercentage = Math.round((pageCount / promptBoxes.length) * 100);
+            progressBar.style.width = progressPercentage + '%';
+        } catch (error) {
+            showNotification('Error generating page: ' + error.message);
+            console.error('Generation error:', error);
+        }
+    }
+
+    // All pages are generated, now download ZIP
+    showNotification('All pages generated! Preparing ZIP...');
+    downloadZip();
+}
+
+// Function to download ZIP after all pages are generated
+function downloadZip() {
+    fetch("http://localhost:5000/download-zip")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to download ZIP file.");
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "generated_files.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showNotification("ZIP file downloaded!");
+    })
+    .catch(error => {
+        showNotification("Error downloading ZIP: " + error.message);
+        console.error("Download error:", error);
+    });
+}
+
+
+// Function to handle the generated content
+function handleGeneratedContent(data) {
+    // This function would process the generated content
+    // Example: download files, show preview, etc.
+    console.log('Generated content:', data);
+    
+    // Save the current project to recent projects
+    saveCurrentProject();
+}
+
+// Store selected colors
+const selectedColors = [];
+const MAX_COLORS = 3;
+
+function toggleColor(element, colorValue) {
+    // Check if element is already selected
+    const isSelected = element.classList.contains('selected');
+    
+    // If it's already selected, just toggle it off
+    if (isSelected) {
+        element.classList.remove('selected');
+        const colorIndex = selectedColors.indexOf(colorValue);
+        if (colorIndex !== -1) {
+            selectedColors.splice(colorIndex, 1);
+        }
+        return;
+    }
+    
+    // If not selected and we're at the limit, show notification
+    if (selectedColors.length >= MAX_COLORS) {
+        showNotification(`Maximum ${MAX_COLORS} colors allowed!`);
+        return;
+    }
+    
+    // Otherwise, toggle it on
+    element.classList.add('selected');
+    selectedColors.push(colorValue);
+}
+
+// Show notification function
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageEl = document.getElementById('notification-message');
+    
+    messageEl.textContent = message;
+    notification.classList.add('show');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Close notification function
+function closeNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.remove('show');
+}
+// Function to handle logout
+function logout() {
+    // Remove the current user from localStorage
+    localStorage.removeItem('currentUser');
+    
+    // Redirect back to login.html
+    window.location.href = 'login.html';
+}
+
+// Initialize UI on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize night mode
+    initializeNightMode();
+    
+    // Initialize project title functionality
+    initializeProjectTitle();
+    
+    // Initialize new project button
+    initializeNewProjectButton();
+    
+    // Load recent projects
+    updateRecentProjectsUI();
+
+    // Add this to your JavaScript initialization code (add inside the DOMContentLoaded event listener)
+    // Display the current username in the dropdown
+    // Display the current username in the dropdown
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (currentUser) {
+    const userObj = JSON.parse(currentUser); // Parse the JSON string into an object
+    const fullName = `${userObj.firstName} ${userObj.lastName}`; // Combine first and last names
+    document.getElementById('username-display').textContent = fullName;
+    } else {
+    document.getElementById('username-display').textContent = 'Guest';
+    }
+
+
+    
+    // Set up initial file upload listener for the first prompt box
+    const initialFileInput = document.querySelector('.prompt-container .file-input');
+    const initialFileName = document.querySelector('.prompt-container .file-name');
+    
+    if (initialFileInput && initialFileName) {
+        initialFileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                initialFileName.textContent = this.files[0].name;
+            }
+        });
+    }
+    
+    // Add click event to logout button in dropdown
+    document.getElementById('logoutButton').addEventListener('click', logout);
+});
+      </script>
+   </body>
+</html>

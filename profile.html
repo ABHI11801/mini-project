@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Profile Settings - WebGen</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sigmar&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --background-gradient: linear-gradient(135deg, #6a11cb, #2575fc);
+            --button-color: #6a11cb;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--background-gradient);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .maincontainer {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            color: #333;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--background-gradient);
+            color: white;
+        }
+        
+        .header-title {
+            font-family: Sigmar, sans-serif;
+            font-size: 2rem;
+        }
+        
+        .night-mode-toggle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .night-mode-toggle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-content {
+            display: flex;
+            padding: 30px;
+        }
+        
+        .profile-sidebar {
+            width: 250px;
+            padding-right: 30px;
+        }
+        
+        .profile-avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 70px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .change-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #fff;
+            color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .change-avatar:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        
+        .avatar-upload {
+            display: none;
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-items {
+            list-style: none;
+        }
+        
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(106, 17, 203, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .nav-item.active {
+            font-weight: bold;
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .profile-main {
+            flex: 1;
+            padding-left: 30px;
+            border-left: 1px solid #eee;
+        }
+        
+        .settings-section {
+            margin-bottom: 30px;
+        }
+        
+        .settings-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
+        }
+        
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .switch-label {
+            flex: 1;
+            font-weight: bold;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background: var(--button-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-secondary {
+            background: #ccc;
+            color: #333;
+            margin-right: 10px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            max-width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-close {
+            margin-left: 10px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.2s;
+        }
+        
+        .notification-close:hover {
+            color: #333;
+        }
+        
+        /* Night mode */
+        body.night-mode {
+            background: linear-gradient(135deg, #2d3748, #1a365d);
+        }
+        
+        body.night-mode .container {
+            background: #2d3748;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            border: 1px solid #4a5568;
+            color: #e2e8f0;
+        }
+        
+        body.night-mode .profile-email {
+            color: #a0aec0;
+        }
+        
+        body.night-mode .profile-main {
+            border-left: 1px solid #4a5568;
+        }
+        
+        body.night-mode .settings-section h2 {
+            color: #90cdf4;
+            border-bottom: 2px solid #4a5568;
+        }
+        
+        body.night-mode .form-control {
+            background: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+        }
+        
+        body.night-mode .form-control:focus {
+            border-color: #63b3ed;
+            box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+        }
+        
+        body.night-mode .slider {
+            background-color: #4a5568;
+        }
+        
+        body.night-mode input:checked + .slider {
+            background-color: #63b3ed;
+        }
+        
+        body.night-mode .btn {
+            background: #63b3ed;
+        }
+        
+        body.night-mode .btn-secondary {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        body.night-mode .notification {
+            background-color: rgba(45, 55, 72, 0.9);
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+        }
+        
+        body.night-mode .notification i {
+            color: #63b3ed;
+        }
+        
+        body.night-mode .notification-close {
+            color: #a0aec0;
+        }
+        
+        body.night-mode .notification-close:hover {
+            color: #e2e8f0;
+        }
+        
+        body.night-mode .nav-item:hover, 
+        body.night-mode .nav-item.active {
+            background: rgba(99, 179, 237, 0.15);
+            color: #63b3ed;
+        }
+        
+        body.night-mode .nav-item i {
+            color: #63b3ed;
+        }
+        
+        body.night-mode .change-avatar {
+            background: #2d3748;
+            color: #63b3ed;
+        }
+        
+        body.night-mode .change-avatar:hover {
+            background: #63b3ed;
+            color: #2d3748;
+        }
+        body.night-mode #delete-modal > div {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+
+        body.night-mode .form-group h3 {
+            color: #fc8181; /* Lighter red for dark mode */
+        }
+
+        body.night-mode .form-group p {
+            color: #a0aec0;
+        }
+
+        body.night-mode #delete-account-btn,
+        body.night-mode #confirm-delete {
+            background-color: #fc8181;
+        }
+    </style>
+</head>
+<body>
+    <div class="maincontainer">
+        <div class="background-overlay"></div>
+        
+        <div class="container">
+            <div class="header">
+                <div class="header-title">WebGen</div>
+                <div class="night-mode-toggle" onclick="toggleNightMode()">
+                    <i class="fas fa-moon" id="night-mode-icon"></i>
+                </div>
+            </div>
+            
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <div class="profile-avatar-container">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                            <div class="change-avatar" onclick="document.getElementById('avatar-upload').click()">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <input type="file" id="avatar-upload" class="avatar-upload">
+                        </div>
+                        <div class="profile-name" id="display-name">John Doe</div>
+                        <div class="profile-email" id="display-email">john.doe@example.com</div>
+                    </div>
+                    
+                    <ul class="nav-items">
+                        <li class="nav-item active" data-section="account">
+                            <i class="fas fa-user-circle"></i> Account
+                        </li>
+                        <li class="nav-item" data-section="appearance">
+                            <i class="fas fa-palette"></i> Appearance
+                        </li>
+                        <li class="nav-item" data-section="notifications">
+                            <i class="fas fa-bell"></i> Notifications
+                        </li>
+                        <li class="nav-item" data-section="privacy">
+                            <i class="fas fa-shield-alt"></i> Privacy
+                        </li>
+                        <li class="nav-item" data-section="delete-account">
+                            <i class="fas fa-trash-alt" style="color: #e53e3e;"></i> Delete Account
+                        </li>
+                        <li class="nav-item" onclick="window.location.href='321.html'">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="profile-main">
+                    <div class="settings-section" id="account-section">
+                        <h2>Account Settings</h2>
+                        <div class="form-group">
+                            <label for="fullname">Full Name</label>
+                            <input type="text" id="fullname" class="form-control" value="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" value="john.doe@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" class="form-control" value="johndoe">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" class="form-control" value="********">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section" id="appearance-section" style="display: none;">
+                        <h2>Appearance Settings</h2>
+                        <div class="switch-container">
+                            <div class="switch-label">Dark Mode</div>
+                            <label class="switch">
+                                <input type="checkbox" id="dark-mode-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Theme Color</label>
+                            <div class="theme-options" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px;">
+                                <div class="color-option">
+                                    <span class="color-preview" onclick="setThemeColor('#6a11cb')" style="width: 25px; height: 25px; border-radius: 4px; display: inline-block; background-color: #6a11cb; cursor: pointer; border: 2px solid transparent;"></span>
+                                </div>
+                                <div class="color-option">
+                                    <span class="color-preview" onclick="setThemeColor('#2575fc')" style="width: 25px; height: 25px; border-radius: 4px; display: inline-block; background-color: #2575fc; cursor: pointer; border: 2px solid transparent;"></span>
+                                </div>
+                                <div class="color-option">
+                                    <span class="color-preview" onclick="setThemeColor('#ff4500')" style="width: 25px; height: 25px; border-radius: 4px; display: inline-block; background-color: #ff4500; cursor: pointer; border: 2px solid transparent;"></span>
+                                </div>
+                                <div class="color-option">
+                                    <span class="color-preview" onclick="setThemeColor('#008000')" style="width: 25px; height: 25px; border-radius: 4px; display: inline-block; background-color: green; cursor: pointer; border: 2px solid transparent;"></span>
+                                </div>
+                                <div class="color-option">
+                                    <span class="color-preview" onclick="setThemeColor('#ff0000')" style="width: 25px; height: 25px; border-radius: 4px; display: inline-block; background-color: red; cursor: pointer; border: 2px solid transparent;"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section" id="notifications-section" style="display: none;">
+                        <h2>Notification Settings</h2>
+                        <div class="switch-container">
+                            <div class="switch-label">Email Notifications</div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch-label">Push Notifications</div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch-label">Project Updates</div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch-label">Newsletter</div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section" id="privacy-section" style="display: none;">
+                        <h2>Privacy Settings</h2>
+                        <div class="switch-container">
+                            <div class="switch-label">Profile Visibility</div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch-label">Project Visibility</div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch-label">Data Collection</div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="data-retention">Data Retention Period</label>
+                            <select id="data-retention" class="form-control">
+                                <option value="30">30 Days</option>
+                                <option value="90">90 Days</option>
+                                <option value="180" selected>6 Months</option>
+                                <option value="365">1 Year</option>
+                                <option value="forever">Forever</option>
+                            </select>
+                        </div>      
+                    </div>                       
+                    <div class="settings-section" id="delete-account-section" style="display: none;">
+                        <div class="form-group" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                            <h3 style="color: #e53e3e; margin-bottom: 15px;">Danger Zone</h3>
+                            <p style="margin-bottom: 15px; color: #666;">Once you delete your account, there is no going back. Please be certain.</p>
+                            <button id="delete-account-btn" class="btn" style="background-color: #e53e3e;">Delete Account</button>
+                        </div>
+                        
+                        <!-- Delete Account Confirmation Modal -->
+                        <div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center;">
+                            <div style="background: white; border-radius: 10px; padding: 25px; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;">
+                                <h3 style="margin-bottom: 15px; color: #e53e3e;">Delete Your Account?</h3>
+                                <p style="margin-bottom: 20px;">This action cannot be undone. All your data will be permanently deleted.</p>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button id="cancel-delete" class="btn btn-secondary" style="margin-right: 10px;">Cancel</button>
+                                    <button id="confirm-delete" class="btn" style="background-color: #e53e3e;">Yes, Delete My Account</button>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+                <div class="btn-container">
+                    <button class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button class="btn" onclick="saveChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">
+            <p id="notification-message">Settings saved successfully!</p>
+        </div>
+        <div class="notification-close" onclick="closeNotification()">×</div>
+    </div>
+
+    
+    <script>
+        // Toggle sidebar menu items
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.settings-section');
+        
+        navItems.forEach(item => {
+            if (item.dataset.section) {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    navItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Hide all sections
+                    sections.forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    // Show the selected section
+                    const sectionId = this.dataset.section + '-section';
+                    document.getElementById(sectionId).style.display = 'block';
+                });
+            }
+        });
+        
+        // Toggle night mode with improved animation
+        function toggleNightMode() {
+            document.body.classList.toggle('night-mode');
+            
+            // Save preference to localStorage
+            const isNightMode = document.body.classList.contains('night-mode');
+            localStorage.setItem('nightMode', isNightMode);
+            
+            // Update the switch in appearance settings
+            document.getElementById('dark-mode-switch').checked = isNightMode;
+            
+            // Update the icon based on current mode with animation
+            const nightModeIcon = document.getElementById('night-mode-icon');
+            const nightModeToggle = document.querySelector('.night-mode-toggle');
+            
+            // Add rotation animation
+            nightModeToggle.style.transition = 'transform 0.5s';
+            nightModeToggle.style.transform = 'rotate(180deg)';
+            
+            setTimeout(() => {
+                if (isNightMode) {
+                    nightModeIcon.className = 'fas fa-sun';
+                    showNotification('Dark mode enabled');
+                } else {
+                    nightModeIcon.className = 'fas fa-moon';
+                    showNotification('Light mode enabled');
+                }
+                
+                // Reset the rotation after changing the icon
+                setTimeout(() => {
+                    nightModeToggle.style.transition = 'transform 0.2s';
+                    nightModeToggle.style.transform = 'rotate(0deg)';
+                }, 150);
+            }, 250);
+        }
+        
+        // Initialize night mode based on saved preference
+        function initializeNightMode() {
+            // Check if night mode was previously enabled
+            const isNightMode = localStorage.getItem('nightMode') === 'true';
+            
+            if (isNightMode) {
+                document.body.classList.add('night-mode');
+                document.getElementById('night-mode-icon').className = 'fas fa-sun';
+                document.getElementById('dark-mode-switch').checked = true;
+            }
+        }
+        
+        // Toggle dark mode from switch
+        document.getElementById('dark-mode-switch').addEventListener('change', function() {
+            if (this.checked) {
+                if (!document.body.classList.contains('night-mode')) {
+                    toggleNightMode();
+                }
+            } else {
+                if (document.body.classList.contains('night-mode')) {
+                    toggleNightMode();
+                }
+            }
+        });
+        
+        // Set theme color
+        function setThemeColor(color) {
+            document.documentElement.style.setProperty('--primary-color', color);
+            
+            // Set a matching secondary color
+            let secondaryColor;
+            switch(color) {
+                case '#6a11cb': secondaryColor = '#2575fc'; break;
+                case '#2575fc': secondaryColor = '#0099ff'; break;
+                case '#ff4500': secondaryColor = '#ff7f50'; break;
+                case '#008000': secondaryColor = '#00cc00'; break;
+                case '#ff0000': secondaryColor = '#ff5555'; break;
+                default: secondaryColor = '#2575fc';
+            }
+            
+            document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+            document.documentElement.style.setProperty('--background-gradient', `linear-gradient(135deg, ${color}, ${secondaryColor})`);
+            document.documentElement.style.setProperty('--button-color', color);
+            
+            // Update preview selection
+            const previews = document.querySelectorAll('.color-preview');
+            previews.forEach(preview => {
+                preview.style.border = '2px solid transparent';
+                if (preview.style.backgroundColor === color || 
+                    preview.getAttribute('onclick').includes(color)) {
+                    preview.style.border = '2px solid white';
+                    if (document.body.classList.contains('night-mode')) {
+                        preview.style.border = '2px solid #4a5568';
+                    }
+                }
+            });
+            
+            showNotification('Theme color updated');
+        }
+        
+        // Avatar upload preview
+        document.getElementById('avatar-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatar = document.querySelector('.profile-avatar');
+                    avatar.innerHTML = '';
+                    avatar.style.background = 'none';
+                    avatar.style.backgroundImage = `url(${e.target.result})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    
+                    // Add the change avatar button back
+                    const changeAvatarBtn = document.createElement('div');
+                    changeAvatarBtn.className = 'change-avatar';
+                    changeAvatarBtn.innerHTML = '<i class="fas fa-camera"></i>';
+                    changeAvatarBtn.onclick = function() {
+                        document.getElementById('avatar-upload').click();
+                    };
+                    avatar.appendChild(changeAvatarBtn);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Save changes function
+        function saveChanges() {
+            // Get form values
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            
+            // Update display name and email
+            document.getElementById('display-name').textContent = fullname;
+            document.getElementById('display-email').textContent = email;
+            
+            // Show notification
+            showNotification('Settings saved successfully!');
+        }
+        
+        // Reset form function
+        function resetForm() {
+            // Get original display values
+            const displayName = document.getElementById('display-name').textContent;
+            const displayEmail = document.getElementById('display-email').textContent;
+            
+            // Reset form values
+            document.getElementById('fullname').value = displayName;
+            document.getElementById('email').value = displayEmail;
+            
+            showNotification('Changes discarded');
+        }
+        
+        // Show notification function
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notification-message');
+            
+            messageEl.textContent = message;
+            notification.classList.add('show');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Close notification function
+        function closeNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNightMode();
+            
+            // Highlight the first theme color as selected
+            const firstColorPreview = document.querySelector('.color-preview');
+            if (firstColorPreview) {
+                firstColorPreview.style.border = '2px solid white';
+                if (document.body.classList.contains('night-mode')) {
+                    firstColorPreview.style.border = '2px solid #4a5568';
+                }
+            }
+        });
+        // Delete account functionality
+document.getElementById('delete-account-btn').addEventListener('click', function() {
+    // Show the confirmation modal
+    const deleteModal = document.getElementById('delete-modal');
+    deleteModal.style.display = 'flex';
+});
+
+// Cancel delete
+document.getElementById('cancel-delete').addEventListener('click', function() {
+    document.getElementById('delete-modal').style.display = 'none';
+});
+
+// Confirm delete
+document.getElementById('confirm-delete').addEventListener('click', function() {
+    // In a real app, you would make an API call to delete the account
+    // For this demo, we'll simulate success and redirect to login
+    
+    // Show deletion notification
+    showNotification('Account successfully deleted');
+    
+    // Hide modal
+    document.getElementById('delete-modal').style.display = 'none';
+    
+    // Redirect to login page after brief delay
+    setTimeout(() => {
+        window.location.href = 'login.html'; // Change to your login page URL
+    }, 2000);
+});
+
+// Update night mode styling for delete modal
+function updateDeleteModalNightMode() {
+    const isNightMode = document.body.classList.contains('night-mode');
+    const deleteModal = document.getElementById('delete-modal');
+    const modalContent = deleteModal.querySelector('div');
+    
+    if (isNightMode) {
+        modalContent.style.background = '#2d3748';
+        modalContent.style.color = '#e2e8f0';
+    } else {
+        modalContent.style.background = 'white';
+        modalContent.style.color = '#333';
+    }
+}
+
+// Add this to your toggleNightMode function
+const originalToggleNightMode = toggleNightMode;
+toggleNightMode = function() {
+    originalToggleNightMode();
+    updateDeleteModalNightMode();
+};
+
+// Load user data from session storage when page loads
+function loadUserData() {
+    // Try to load user data from session storage
+    const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+    
+    if (userData.username) {
+        // Update form fields
+        document.getElementById('fullname').value = userData.fullname || 'John Doe';
+        document.getElementById('email').value = userData.email || 'john.doe@example.com';
+        document.getElementById('username').value = userData.username || 'johndoe';
+        
+        // Update display elements
+        document.getElementById('display-name').textContent = userData.fullname || 'John Doe';
+        document.getElementById('display-email').textContent = userData.email || 'john.doe@example.com';
+    }
+}
+
+// Initialize user data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeNightMode();
+    loadUserData();
+    updateDeleteModalNightMode();
+    
+    // Highlight the first theme color as selected
+    const firstColorPreview = document.querySelector('.color-preview');
+    if (firstColorPreview) {
+        firstColorPreview.style.border = '2px solid white';
+        if (document.body.classList.contains('night-mode')) {
+            firstColorPreview.style.border = '2px solid #4a5568';
+        }
+    }
+});
+
+// Update saveChanges function to store data in session storage
+const originalSaveChanges = saveChanges;
+saveChanges = function() {
+    // Get form values
+    const fullname = document.getElementById('fullname').value;
+    const email = document.getElementById('email').value;
+    const username = document.getElementById('username').value;
+    
+    // Save to session storage
+    const userData = {
+        fullname: fullname,
+        email: email,
+        username: username
+    };
+    sessionStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Call original function
+    originalSaveChanges();
+};
+    </script>
+</body>
+</html>
