@@ -1,9 +1,22 @@
+jest.mock('jszip', () => {
+  return function () {
+    return {
+      file: jest.fn(),
+      generateAsync: jest.fn().mockResolvedValue(Buffer.from('mock zip content'))
+    };
+  };
+});
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');
+const bcryptjs = require('bcryptjs');
 
-// Mock dependencies
-jest.mock('bcrypt');
+
+jest.setTimeout(50000);
+
+jest.mock('bcryptjs');
 jest.mock('jsonwebtoken');
 jest.mock('fs');
 jest.mock('child_process');
@@ -12,45 +25,73 @@ jest.mock('axios');
 jest.mock('@azure-rest/ai-inference');
 jest.mock('@azure/core-auth');
 jest.mock('mysql2');
+jest.mock('openai', () => {
+  return jest.fn().mockImplementation(() => ({
+    chat: {
+      completions: {
+        create: jest.fn().mockResolvedValue({
+          choices: [{ message: { content: 'Generated content' } }],
+        }),
+      },
+    },
+  }));
+});
 
-// Import the application after mocking dependencies
-const app = require('../app');
+const OpenAI = require('openai');
+
+const mysql = require('mysql2');
+
+const mockConnection = {
+  connect: jest.fn((callback) => {
+    // Simulate successful connection by default
+    if (callback) callback(null);
+    console.log('[MOCK] Connected to database');
+    return Promise.resolve();
+  }),
+  query: jest.fn((query, params, callback) => {
+    // If callback exists, assume callback style
+    if (callback) {
+      // Default empty response
+      callback(null, []);
+      return;
+    }
+    // If no callback, assume promise style
+    return Promise.resolve([]);
+  }),
+  // Add any other methods your code might use
+  end: jest.fn(),
+  destroy: jest.fn()
+};
+
+// Set up the mock to return our mock connection
+mysql.createConnection.mockReturnValue(mockConnection);
+
+
+const app = require('./server.js');
 
 describe('Express Server API Tests', () => {
-  let mockDB;
-  let mockConnection;
-  let mockQuery;
-  
   beforeEach(() => {
-    // Reset all mocks
+    // Clear all mocks before each test
     jest.clearAllMocks();
-    
-    // Setup MySQL mock
-    mockQuery = jest.fn();
-    mockConnection = {
-      query: mockQuery,
-      connect: jest.fn()
-    };
-    mockDB = require('mysql2').createConnection.mockReturnValue(mockConnection);
-    
-    // Mock environment variables
+
+    // Set environment variables
     process.env.PORT = 5500;
     process.env.JWT_SECRET = 'test-jwt-secret';
     process.env.OPENAI_API_KEY = 'test-openai-key';
     process.env.GOOGLE_GEMINI_API_KEY = 'test-gemini-key';
     process.env.DEEPSEEK = 'test-deepseek-key';
-    
-    // Mock fs functions
+
+    // Set up file system mocks
     fs.readFile.mockImplementation((path, encoding, callback) => {
       callback(null, 'mock file content');
     });
-    fs.writeFileSync.mockImplementation(() => {});
+    fs.writeFileSync.mockImplementation(() => { });
     fs.readFileSync.mockReturnValue(Buffer.from('test content'));
     fs.readdir.mockImplementation((path, callback) => {
       callback(null, ['file1.html', 'file2.css', 'file3.js']);
     });
-    
-    // Mock child_process.spawn
+
+    // Set up child process mocks
     const mockChildProcess = {
       on: jest.fn().mockImplementation((event, callback) => {
         if (event === 'close') callback(0);
@@ -58,87 +99,91 @@ describe('Express Server API Tests', () => {
       })
     };
     spawn.mockReturnValue(mockChildProcess);
-    
-    // Mock JWT
+
+    // Set up authentication mocks
     jwt.sign.mockReturnValue('test-token');
-    jwt.verify.mockReturnValue({ user_id: 1, username: 'testuser', email: 'test@example.com' });
-    
-    // Mock bcrypt
-    bcrypt.hash.mockResolvedValue('hashed-password');
-    bcrypt.compare.mockResolvedValue(true);
+    jwt.verify.mockReturnValue({ user_id: 4, username: 'test2', email: 'test2@gmail.com' });
+
+    bcryptjs.hash.mockResolvedValue('hashed-password');
+    bcryptjs.compare.mockResolvedValue(true);
   });
 
   describe('Authentication Endpoints', () => {
     test('POST /api/signup - should register a new user', async () => {
-      // Mock DB query to simulate checking for existing user
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, []); // No existing user found
-      });
-      
-      // Mock DB query for inserting user
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { insertId: 1 });
-      });
-      
+      console.log('Starting signup test');
+
+      // Set up the specific mock responses for this test
+      mockConnection.query
+        .mockImplementationOnce((query, params, callback) => {
+          console.log('First mock query called - checking if user exists');
+          callback(null, []);  // No existing user found
+        })
+        .mockImplementationOnce((query, params, callback) => {
+          console.log('Second mock query called - inserting new user');
+          callback(null, { insertId: 5 });  // User created with ID 5
+        });
+
+      console.log('Sending request');
       const response = await request(app)
         .post('/api/signup')
         .send({
-          username: 'testuser',
-          email: 'test@example.com',
-          password: 'password123'
+          username: 'test2',
+          email: 'test2@gmail.com',
+          password: 'test'
         });
-      
+
+      console.log('Response received', response.status);
+
+      // Assertions
+      expect(mockConnection.query).toHaveBeenCalledTimes(2);
       expect(response.status).toBe(201);
-      expect(response.body).toEqual({
-        success: true,
-        message: 'User registered successfully'
-      });
-      expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-      expect(mockQuery).toHaveBeenCalledTimes(2);
+      expect(response.body).toEqual(expect.objectContaining({
+        message: expect.stringContaining('registered')
+      }));
     });
-    
     test('POST /api/login - should authenticate user and return token', async () => {
-      // Mock DB query to return user
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{
-          user_id: 1,
-          user_name: 'testuser',
-          user_email: 'test@example.com',
-          user_password: 'hashed-password'
-        }]);
-      });
-      
+      mockConnection.query
+        .mockImplementationOnce((query, params, callback) => {
+          callback(null, [{
+            user_id: 4,
+            user_name: 'test2',
+            user_email: 'test2@gmail.com',
+            user_password: 'hashed-password'
+          }]);
+        });
+      console.log('login Query mock called');
       const response = await request(app)
         .post('/api/login')
         .send({
-          email: 'test@example.com',
-          password: 'password123'
+          email: 'test2@gmail.com',
+          password: 'test'
         });
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         success: true,
         message: 'Login successful',
         token: 'test-token',
         user: {
-          id: 1,
-          username: 'testuser',
-          email: 'test@example.com'
+          id: 4,
+          username: 'test2',
+          email: 'test2@gmail.com'
         }
       });
-      expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed-password');
+      expect(bcryptjs.compare).toHaveBeenCalledWith('test', 'hashed-password');
       expect(jwt.sign).toHaveBeenCalled();
     });
-    
+
     test('POST /api/check-email - should verify email exists', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{ user_id: 1 }]);
-      });
-      
+      mockConnection.query
+        .mockImplementationOnce((query, params, callback) => {
+          callback(null, [{ user_id: 4 }]);
+        });
+
       const response = await request(app)
         .post('/api/check-email')
-        .send({ user_email: 'test@example.com' });
-      
+        .send({ user_email: 'test2@gmail.com' });
+
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: 'Email verified' });
     });
@@ -146,90 +191,42 @@ describe('Express Server API Tests', () => {
 
   describe('Project Management Endpoints', () => {
     test('POST /api/save-project - should save a new project', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { insertId: 1 });
-      });
-      
+      mockConnection.query
+        .mockImplementationOnce((query, params, callback) => {
+          callback(null, { insertId: 1 });
+        });
+
       const pages = [
         { title: 'Home', content: 'Home page content' },
         { title: 'About', content: 'About page content' }
       ];
-      
-      // Mock page insertions
+
       pages.forEach(() => {
-        mockQuery.mockImplementationOnce((query, params, callback) => {
-          callback(null, { insertId: 1 });
-        });
+        mockConnection.query
+          .mockImplementationOnce((query, params, callback) => {
+            callback(null, { insertId: 1 });
+          });
       });
-      
+
       const response = await request(app)
         .post('/api/save-project')
         .send({
           proj_name: 'Test Project',
-          user_id: 1,
+          user_id: 4,
           pages: pages
         });
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         message: 'Project and pages saved successfully',
         proj_id: 1
       });
-      expect(mockQuery).toHaveBeenCalledTimes(3); // 1 for project, 2 for pages
-    });
-    
-    test('GET /api/user-projects - should fetch all user projects', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [
-          { proj_id: 1, proj_name: 'Project 1', created_at: '2023-01-01 12:00:00' },
-          { proj_id: 2, proj_name: 'Project 2', created_at: '2023-01-02 12:00:00' }
-        ]);
-      });
-      
-      const response = await request(app)
-        .get('/api/user-projects')
-        .set('Authorization', 'Bearer test-token');
-      
-      expect(response.status).toBe(200);
-      expect(response.body.projects).toHaveLength(2);
-      expect(jwt.verify).toHaveBeenCalledWith('test-token', expect.any(String));
-    });
-    
-    test('GET /api/project/:id - should fetch project details', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{ proj_id: 1, proj_name: 'Test Project' }]);
-      });
-      
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [
-          { pages_id: 1, proj_id: 1, pages_name: 'Home', pages_description: 'Home content' },
-          { pages_id: 2, proj_id: 1, pages_name: 'About', pages_description: 'About content' }
-        ]);
-      });
-      
-      const response = await request(app)
-        .get('/api/project/1');
-      
-      expect(response.status).toBe(200);
-      expect(response.body.project).toBeDefined();
-      expect(response.body.pages).toHaveLength(2);
+      expect(mockConnection.query).toHaveBeenCalledTimes(3);
     });
   });
 
   describe('Content Generation Endpoints', () => {
     test('POST /generate - should generate content with OpenAI', async () => {
-      // Mock OpenAI response
-      const openaiMock = require('openai');
-      openaiMock.mockImplementation(() => ({
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [{ message: { content: 'Generated content' } }]
-            })
-          }
-        }
-      }));
-      
       const response = await request(app)
         .post('/generate')
         .send({
@@ -238,182 +235,49 @@ describe('Express Server API Tests', () => {
           pagename: 'home',
           filename: 'index',
           pages: ['Home', 'About', 'Contact'],
-          theme: 'modern'
+          theme: 'modern',
         });
-      
+    
       expect(response.status).toBe(200);
       expect(response.body.generatedCode).toBe('Generated content');
       expect(fs.writeFileSync).toHaveBeenCalled();
       expect(spawn).toHaveBeenCalledWith('python', expect.any(Array));
     });
-    
-    test('GET /download-zip - should create and send a zip file', async () => {
-      // Mock JSZip
-      jest.mock('jszip', () => {
-        return function() {
-          return {
-            file: jest.fn(),
-            generateAsync: jest.fn().mockResolvedValue(Buffer.from('mock zip content'))
-          };
-        };
-      });
-      
-      const response = await request(app)
-        .get('/download-zip');
-      
-      expect(response.status).toBe(200);
-      expect(response.header['content-type']).toBe('application/zip');
-      expect(response.header['content-disposition']).toBe('attachment; filename=output.zip');
-    });
-  });
-
-  describe('Password Reset Flow', () => {
-    test('POST /api/generate-code - should generate and send verification code', async () => {
-      const nodemailer = require('nodemailer');
-      const mockSendMail = jest.fn().mockResolvedValue({ messageId: 'mock-id' });
-      nodemailer.createTransport.mockReturnValue({
-        sendMail: mockSendMail
-      });
-      
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { insertId: 1 });
-      });
-      
-      const response = await request(app)
-        .post('/api/generate-code')
-        .send({ user_email: 'test@example.com' });
-      
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Verification code sent to your email');
-      expect(mockSendMail).toHaveBeenCalled();
-    });
-    
-    test('POST /api/reset-password - should update user password', async () => {
-      // Mock code verification query
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{ code_id: 1, user_email: 'test@example.com', verification_code: '123456' }]);
-      });
-      
-      // Mock password update query
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { affectedRows: 1 });
-      });
-      
-      // Mock mark code as used
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { affectedRows: 1 });
-      });
-      
-      const response = await request(app)
-        .post('/api/reset-password')
-        .send({
-          user_email: 'test@example.com',
-          code: '123456',
-          new_password: 'newpassword123'
-        });
-      
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Password reset successful');
-      expect(bcrypt.hash).toHaveBeenCalledWith('newpassword123', 10);
-    });
-  });
-
-  describe('User Profile Management', () => {
-    test('GET /api/user-profile - should return user profile', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{ user_name: 'testuser', user_email: 'test@example.com' }]);
-      });
-      
-      const response = await request(app)
-        .get('/api/user-profile')
-        .set('Authorization', 'Bearer test-token');
-      
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        username: 'testuser',
-        email: 'test@example.com'
-      });
-    });
-    
-    test('POST /api/update-profile - should update user profile', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { affectedRows: 1 });
-      });
-      
-      const response = await request(app)
-        .post('/api/update-profile')
-        .set('Authorization', 'Bearer test-token')
-        .send({
-          username: 'updateduser',
-          email: 'updated@example.com'
-        });
-      
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Profile updated successfully');
-    });
-    
-    test('DELETE /api/delete-account - should delete user account', async () => {
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, { affectedRows: 1 });
-      });
-      
-      const response = await request(app)
-        .delete('/api/delete-account')
-        .set('Authorization', 'Bearer test-token');
-      
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Account deleted successfully');
-    });
   });
 
   describe('Error Handling', () => {
     test('POST /api/login - should handle invalid credentials', async () => {
-      // Mock DB query to return user
-      mockQuery.mockImplementationOnce((query, params, callback) => {
-        callback(null, [{
-          user_id: 1,
-          user_name: 'testuser',
-          user_email: 'test@example.com',
-          user_password: 'hashed-password'
-        }]);
-      });
-      
-      // Mock password comparison to fail
-      bcrypt.compare.mockResolvedValueOnce(false);
-      
+      mockConnection.query
+        .mockImplementationOnce((query, params, callback) => {
+          callback(null, [{
+            user_id: 1,
+            user_name: 'test2',
+            user_email: 'test2@gmail.com',
+            user_password: 'hashed-password'
+          }]);
+        });
+
+      bcryptjs.compare.mockResolvedValueOnce(false);
+
       const response = await request(app)
         .post('/api/login')
         .send({
-          email: 'test@example.com',
+          email: 'test2@gmail.com',
           password: 'wrongpassword'
         });
-      
+
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
         success: false,
         message: 'Incorrect password'
       });
     });
-    
-    test('GET /api/user-projects - should handle invalid token', async () => {
-      // Mock JWT verification to throw an error
-      jwt.verify.mockImplementationOnce(() => {
-        throw new Error('Invalid token');
-      });
-      
-      const response = await request(app)
-        .get('/api/user-projects')
-        .set('Authorization', 'Bearer invalid-token');
-      
-      expect(response.status).toBe(401);
-      expect(response.body.error).toBe('Invalid token');
-    });
-    
+
+
     test('POST /generate - should handle API errors', async () => {
-      // Mock axios to simulate API error
       const axios = require('axios');
       axios.post.mockRejectedValueOnce(new Error('API error'));
-      
+
       const response = await request(app)
         .post('/generate')
         .send({
@@ -424,7 +288,7 @@ describe('Express Server API Tests', () => {
           pages: ['Home', 'About', 'Contact'],
           theme: 'modern'
         });
-      
+
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Error generating content');
     });

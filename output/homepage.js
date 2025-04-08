@@ -1,2 +1,2 @@
-// Add any JavaScript functionality here
-console.log("Homepage JS loaded!");
+// You can add JavaScript functionality here if needed
+console.log("Homepage loaded!");

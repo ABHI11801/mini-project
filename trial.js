@@ -1,14 +1,27 @@
-async function main() {
-    const { Client } = await import("@gradio/client");
+const fs = require('fs');
+const archiver = require('archiver');
+const path = require('path');
 
-    const client = await Client.connect("Qwen/Qwen2.5-Coder-Artifacts");
-    console.log("Connected to LLM");
+function downloadZip() {
+    const folderToZip = path.join(__dirname, 'output');
+    const zipFilePath = path.join(__dirname, 'output.zip');
+    const output = fs.createWriteStream(zipFilePath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    console.log(`✅ Zip ${archive.pointer()} bytes`);
 
-    const result = await client.predict("/generation_code", { 		
-        query: `give the codes for a homepage of the indian tourism in html css js ""as a json response with key as filename and value as content"". GENERATE flask if absolutely necessary. Use routes assuming that all HTML pages are located in the same folder. DON'T GIVE ANY EXTRA OUTPUT THAN SPECIFIED. Use images from stable pixabay`
+    output.on('close', () => {
+        console.log(`✅ Zipped ${archive.pointer()} bytes`);
+        console.log(`📦 Zip file created: ${zipFilePath}`);
     });
 
-    console.log(result.data);
+    archive.on('error', err => {
+        throw err;
+    });
+
+    archive.pipe(output);
+    archive.directory(folderToZip, false); // Set to 'output' to include folder name in zip
+    archive.finalize();
 }
 
-main().catch(console.error);
+// Run the function
+downloadZip();

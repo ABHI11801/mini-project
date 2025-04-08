@@ -7,7 +7,7 @@ async function fetchUserProjects() {
     }
 
     try {
-        const response = await fetch('http://localhost:5000/api/user-projects', {
+        const response = await fetch('http://localhost:5500/api/user-projects', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -156,7 +156,7 @@ async function deleteProject(projectId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:5000/api/project/${projectId}`, {
+        const response = await fetch(`http://localhost:5500/api/project/${projectId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

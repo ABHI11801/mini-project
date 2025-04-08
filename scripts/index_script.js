@@ -1,11 +1,13 @@
+
+
 function initializeProjectTitle() {
     const titleInput = document.getElementById('project-title');
     const editButton = document.getElementById('edit-title-btn');
-    
+
     titleInput.classList.add('readonly');
     titleInput.setAttribute('readonly', true);
-    
-    editButton.addEventListener('click', function() {
+
+    editButton.addEventListener('click', function () {
         if (titleInput.hasAttribute('readonly')) {
             titleInput.removeAttribute('readonly');
             titleInput.classList.remove('readonly');
@@ -16,18 +18,18 @@ function initializeProjectTitle() {
             titleInput.classList.add('readonly');
         }
     });
-    
-    titleInput.addEventListener('keydown', function(e) {
+
+    titleInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             titleInput.setAttribute('readonly', true);
             titleInput.classList.add('readonly');
         }
     });
-    
-    titleInput.addEventListener('blur', function() {
+
+    titleInput.addEventListener('blur', function () {
         titleInput.setAttribute('readonly', true);
         titleInput.classList.add('readonly');
-        
+
         if (!titleInput.value.trim()) {
             titleInput.value = "Untitled";
         }
@@ -39,42 +41,42 @@ let currentLoadedProjectData = null;
 function saveCurrentProject() {
     const projectTitle = document.getElementById('project-title').value || 'Untitled';
     const promptBoxes = document.querySelectorAll('.prompt-box');
-    
+
     const projectContent = [];
     promptBoxes.forEach(box => {
         const title = box.querySelector('.title-input').value;
         const content = box.querySelector('textarea').value;
         const fileName = box.querySelector('.file-name').textContent;
-        
+
         projectContent.push({
             title: title,
             content: content,
             fileName: fileName
         });
     });
-    
-    if (projectContent.length === 0 || (projectContent.length === 1 && 
+
+    if (projectContent.length === 0 || (projectContent.length === 1 &&
         !projectContent[0].title && !projectContent[0].content && !projectContent[0].fileName)) {
         return false;
     }
-    
-    if (currentLoadedProjectData && 
-        projectTitle === currentLoadedProjectData.title && 
+
+    if (currentLoadedProjectData &&
+        projectTitle === currentLoadedProjectData.title &&
         JSON.stringify(projectContent) === JSON.stringify(currentLoadedProjectData.content)) {
         return false;
     }
-    
+
     const currentUser = JSON.parse(localStorage.getItem('currentUser')); // Parse the JSON string
     const storageKey = currentUser && currentUser.id ? `recentProjects_${currentUser.id}` : 'recentProjects';
-    
+
     let recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
+
     // Check if this project already exists in recent projects
-    const existingProjectIndex = recentProjects.findIndex(p => 
-        p.title === projectTitle && 
+    const existingProjectIndex = recentProjects.findIndex(p =>
+        p.title === projectTitle &&
         JSON.stringify(p.content) === JSON.stringify(projectContent)
     );
-    
+
     if (existingProjectIndex !== -1) {
         // Project already exists, just move it to the top
         const existingProject = recentProjects.splice(existingProjectIndex, 1)[0];
@@ -88,15 +90,15 @@ function saveCurrentProject() {
             icon: 'fa-file'  // Use file icon
         });
     }
-    
+
     if (recentProjects.length > 5) {
         recentProjects = recentProjects.slice(0, 5);
     }
-    
+
     localStorage.setItem(storageKey, JSON.stringify(recentProjects));
-    
+
     updateRecentProjectsUI();
-    
+
     return true;
 }
 
@@ -107,12 +109,12 @@ function getRandomIcon() {
 function updateRecentProjectsUI() {
     const projectsList = document.querySelector('.projects-list');
     projectsList.innerHTML = '';
-    
+
     const currentUser = JSON.parse(localStorage.getItem('currentUser')); // Get current user
     const storageKey = currentUser && currentUser.id ? `recentProjects_${currentUser.id}` : 'recentProjects';
-   
+
     const recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
+
     if (recentProjects.length === 0) {
         const noProjects = document.createElement('div');
         noProjects.className = 'project-item';
@@ -125,15 +127,15 @@ function updateRecentProjectsUI() {
         projectsList.appendChild(noProjects);
         return;
     }
-    
+
     recentProjects.forEach((project, index) => {
         const projectItem = document.createElement('div');
         projectItem.className = 'project-item';
         projectItem.dataset.index = index; // Use index for local storage
-        
+
         // Always use the file icon for all projects
         const icon = 'fa-file';
-        
+
         projectItem.innerHTML = `
             <div class="project-icon">
                 <i class="fas ${icon}"></i>
@@ -143,11 +145,11 @@ function updateRecentProjectsUI() {
                 <div class="project-date">Created: ${formatDate(project.date)}</div>
             </div>
         `;
-        
-        projectItem.addEventListener('click', function() {
+
+        projectItem.addEventListener('click', function () {
             loadProject(index); // Use the local storage loadProject
         });
-        
+
         projectsList.appendChild(projectItem);
     });
 }
@@ -157,17 +159,17 @@ function formatDate(dateString) {
     if (!dateString) {
         return 'Date not available';
     }
-    
+
     try {
         // Parse the MySQL datetime string
         const date = new Date(dateString);
-        
+
         // Check if the date is valid
         if (isNaN(date.getTime())) {
             console.error('Invalid date string:', dateString);
             return 'Date not available';
         }
-        
+
         // Format the date in the desired format: "April 6, 2025 at 09:01 PM"
         const month = date.toLocaleString('en-US', { month: 'long' });
         const day = date.getDate();
@@ -176,7 +178,7 @@ function formatDate(dateString) {
         const minutes = date.getMinutes().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
-        
+
         return `${month} ${day}, ${year} at ${formattedHours}:${minutes} ${ampm}`;
     } catch (error) {
         console.error('Error formatting date:', error);
@@ -186,28 +188,28 @@ function formatDate(dateString) {
 function loadProject(index) {
     const currentUser = localStorage.getItem('currentUser');
     const storageKey = currentUser && currentUser.id ? `recentProjects_${currentUser.id}` : 'recentProjects';
-    
+
     const recentProjects = JSON.parse(localStorage.getItem(storageKey)) || [];
     const project = recentProjects[index];
-    
+
     if (!project) return;
-    
+
     currentLoadedProjectData = {
         title: project.title,
         content: JSON.parse(JSON.stringify(project.content)),
         icon: project.icon
     };
-    
+
     const projectTitleInput = document.getElementById('project-title');
     projectTitleInput.value = project.title;
-    
+
     const promptContainer = document.getElementById('prompt-container');
     promptContainer.innerHTML = '';
-    
+
     const addBtnContainer = document.createElement('div');
     addBtnContainer.className = 'add-btn-container';
     addBtnContainer.innerHTML = `<button class="add-btn" onclick="addPrompt()">+</button>`;
-    
+
     project.content.forEach(item => {
         const promptBox = document.createElement('div');
         promptBox.className = 'prompt-box';
@@ -221,37 +223,37 @@ function loadProject(index) {
             <div class="file-name">${item.fileName || ''}</div>
             ${project.content.length > 1 ? '<button class="remove-btn" onclick="removePrompt(this)">✖</button>' : ''}
         `;
-        
+
         const fileInput = promptBox.querySelector('.file-input');
         const fileName = promptBox.querySelector('.file-name');
-        fileInput.addEventListener('change', function() {
+        fileInput.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
                 fileName.textContent = this.files[0].name;
             }
         });
-        
+
         promptContainer.appendChild(promptBox);
     });
-    
+
     promptContainer.appendChild(addBtnContainer);
-    
+
     showNotification(`Loaded project: ${project.title}`);
 }
 
 function initializeNewProjectButton() {
     const newProjectBtn = document.getElementById('new-project-btn');
-    
-    newProjectBtn.addEventListener('click', function() {
+
+    newProjectBtn.addEventListener('click', function () {
         const saved = saveCurrentProject();
-        
+
         const projectTitleInput = document.getElementById('project-title');
         if (projectTitleInput) {
             projectTitleInput.value = "Untitled";
         }
-        
+
         const promptContainer = document.getElementById('prompt-container');
         promptContainer.innerHTML = '';
-        
+
         const promptBox = document.createElement('div');
         promptBox.className = 'prompt-box';
         promptBox.innerHTML = `
@@ -263,30 +265,30 @@ function initializeNewProjectButton() {
             </label>
             <div class="file-name"></div>
         `;
-        
+
         const fileInput = promptBox.querySelector('.file-input');
         const fileName = promptBox.querySelector('.file-name');
-        fileInput.addEventListener('change', function() {
+        fileInput.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
                 fileName.textContent = this.files[0].name;
             }
         });
-        
+
         const addBtnContainer = document.createElement('div');
         addBtnContainer.className = 'add-btn-container';
         addBtnContainer.innerHTML = `<button class="add-btn" onclick="addPrompt()">+</button>`;
-        
+
         promptContainer.appendChild(promptBox);
         promptContainer.appendChild(addBtnContainer);
-        
+
         const progressBar = document.getElementById('generation-progress');
         if (progressBar) {
             progressBar.style.width = '0%';
         }
-        
+
         // Reset the currentLoadedProjectData
         currentLoadedProjectData = null;
-        
+
         // Show notification
         if (saved) {
             showNotification('Previous project saved and new project created');
@@ -305,7 +307,7 @@ function toggleSidebar() {
 function toggleProfileMenu() {
     const dropdown = document.getElementById('profileDropdown');
     dropdown.classList.toggle('active');
-    
+
     // Close dropdown when clicking outside
     if (dropdown.classList.contains('active')) {
         document.addEventListener('click', closeDropdownOnClickOutside);
@@ -317,19 +319,19 @@ function toggleProfileMenu() {
 // Function to toggle night mode with improved animation
 function toggleNightMode() {
     document.body.classList.toggle('night-mode');
-    
+
     // Save preference to localStorage
     const isNightMode = document.body.classList.contains('night-mode');
     localStorage.setItem('nightMode', isNightMode);
-    
+
     // Update the icon based on current mode with animation
     const nightModeIcon = document.getElementById('night-mode-icon');
     const nightModeToggle = document.querySelector('.night-mode-toggle');
-    
+
     // Add rotation animation
     nightModeToggle.style.transition = 'transform 0.5s';
     nightModeToggle.style.transform = 'rotate(180deg)';
-    
+
     setTimeout(() => {
         if (isNightMode) {
             nightModeIcon.className = 'fas fa-sun';
@@ -338,7 +340,7 @@ function toggleNightMode() {
             nightModeIcon.className = 'fas fa-moon';
             showNotification('Light mode enabled');
         }
-        
+
         // Reset the rotation after changing the icon
         setTimeout(() => {
             nightModeToggle.style.transition = 'transform 0.2s';
@@ -351,7 +353,7 @@ function toggleNightMode() {
 function initializeNightMode() {
     // Check if night mode was previously enabled
     const isNightMode = localStorage.getItem('nightMode') === 'true';
-    
+
     if (isNightMode) {
         document.body.classList.add('night-mode');
         document.getElementById('night-mode-icon').className = 'fas fa-sun';
@@ -362,7 +364,7 @@ function initializeNightMode() {
 function closeDropdownOnClickOutside(event) {
     const dropdown = document.getElementById('profileDropdown');
     const avatar = document.querySelector('.profile-avatar');
-    
+
     // If click is outside the dropdown and not on the avatar
     if (!dropdown.contains(event.target) && !avatar.contains(event.target)) {
         dropdown.classList.remove('active');
@@ -374,7 +376,7 @@ function closeDropdownOnClickOutside(event) {
 function addPrompt() {
     const container = document.getElementById("prompt-container");
     const addBtnContainer = container.querySelector('.add-btn-container');
-    
+
     const promptBox = document.createElement("div");
     promptBox.className = "prompt-box";
     promptBox.innerHTML = `
@@ -387,31 +389,7 @@ function addPrompt() {
         <div class="file-name"></div>
         <button class="remove-btn" onclick="removePrompt(this)">✖</button>
     `;
-    
 
-    const fileInput = promptBox.querySelector('.file-input');
-    const fileName = promptBox.querySelector('.file-name');
-
-    fileInput.addEventListener('change', function () {
-        if (this.files && this.files.length > 0) {
-            const file = this.files[0];
-            fileName.textContent = file.name;
-
-        // Upload the file to the backend
-            const formData = new FormData();
-            formData.append('file', file);
-
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error uploading file:', error));
-        }
-    });
-
-    
     // Insert the new prompt box before the add button container
     container.insertBefore(promptBox, addBtnContainer);
 }
@@ -419,18 +397,18 @@ function addPrompt() {
 function removePrompt(button) {
     const container = document.getElementById("prompt-container");
     const promptBoxes = container.querySelectorAll('.prompt-box');
-    
+
     // Prevent removing the last prompt box
     if (promptBoxes.length > 1) {
         button.parentElement.remove();
     }
 }
-async function generatePageNames(){
-    const titles=[];
+async function generatePageNames() {
+    const titles = [];
     const promptBoxes = document.querySelectorAll('.prompt-box');
     for (const box of promptBoxes) {
         const title = box.querySelector('.title-input').value;
-        if(title){
+        if (title) {
             titles.push(title);
         }
     }
@@ -441,7 +419,7 @@ function saveProjectAndPages() {
         const proj_name = document.getElementById('project-title').value;
         const currentUser = JSON.parse(localStorage.getItem('currentUser')); // Get current user
         const user_id = currentUser ? currentUser.id : null; // Use user ID or null if not logged in
-        
+
         if (!user_id) {
             const error = new Error('No user logged in; cannot save to database');
             console.log(error.message);
@@ -462,41 +440,44 @@ function saveProjectAndPages() {
         const requestBody = { proj_name: proj_name, user_id: user_id, pages: pages };
         console.log('Saving project to database:', requestBody); // Debug: Log the data being sent
 
-        fetch('http://localhost:5500/api/save-project', { 
+        fetch('http://localhost:5500/api/save-project', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestBody)
         })
-        .then(response => {
-            console.log('Response status:', response.status); // Debug: Log the response status
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Database save success:', data); // Debug: Log the response data
-            showNotification('Project saved successfully!');
-            resolve(data);
-        })
-        .catch((error) => {
-            console.error('Error saving to database:', error); // Debug: Log the error
-            showNotification('Error saving project: ' + error.message);
-            reject(error);
-        });
+            .then(response => {
+                console.log('Response status:', response.status); // Debug: Log the response status
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Database save success:', data); // Debug: Log the response data
+                showNotification('Project saved successfully!');
+                resolve(data);
+            })
+            .catch((error) => {
+                console.error('Error saving to database:', error); // Debug: Log the error
+                showNotification('Error saving project: ' + error.message);
+                reject(error);
+            });
     });
 }
+
+
 async function generateWebContent() {
+
     try {
         // Check if we're working with an existing project
         const isExistingProject = currentLoadedProjectData !== null;
-        
+
         // Save project data first, before starting generation
         try {
             showNotification('Saving project data before generation...');
-            
+
             if (isExistingProject) {
                 // Update existing project
                 await updateExistingProject();
@@ -505,7 +486,7 @@ async function generateWebContent() {
                 // Save as new project
                 await saveProjectAndPages();
                 showNotification('Project saved successfully! Starting generation...');
-                
+
                 // Save to recent projects only for new projects
                 saveCurrentProject();
             }
@@ -514,17 +495,17 @@ async function generateWebContent() {
             showNotification('Warning: Could not save project before generation: ' + error.message);
             // Continue with generation even if save fails
         }
-        
+
         const titles = await generatePageNames();
         const selectedLLM = document.getElementById('llm-selection').value;
         const promptBoxes = document.querySelectorAll('.prompt-box');
         const progressBar = document.getElementById('generation-progress');
-        
+
         // Ensure selectedColors is properly initialized
         if (typeof window.selectedColors === 'undefined') {
             window.selectedColors = [];
         }
-        
+
         progressBar.style.width = '10%';
         showNotification('Generating pages one by one...');
 
@@ -532,7 +513,7 @@ async function generateWebContent() {
 
         let pageCount = 0;
         let generationSuccessful = true;
-        
+
         for (const box of promptBoxes) {
             const title = box.querySelector('.title-input').value;
             const content = box.querySelector('textarea').value;
@@ -577,7 +558,6 @@ async function generateWebContent() {
             // All pages are generated successfully, now download ZIP
             showNotification('All pages generated! Preparing ZIP...');
             try {
-                await downloadZip();
                 showNotification('Generation process completed successfully!');
             } catch (error) {
                 showNotification('Error preparing ZIP: ' + error.message);
@@ -591,39 +571,59 @@ async function generateWebContent() {
         console.error('Process error:', error);
     }
 }
+function savefile(){
+    const fileInput = promptBox.querySelector('.file-input');
+    const fileName = promptBox.querySelector('.file-name');
 
-// Function to download ZIP after all pages are generated
-function downloadZip() {
-    fetch("http://localhost:5500/download-zip")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Failed to download ZIP file.");
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files.length > 0) {
+            const file = this.files[0];
+            fileName.textContent = file.name;
+
+            // Upload the file to the backend
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('http://localhost:5500/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    console.log(data);
+                    fileName.textContent = file.name + " (Uploaded)";
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', error);
+                    fileName.textContent = file.name + " (Upload failed)";
+                });
         }
-        return response.blob();
-    })
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "generated_files.zip";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showNotification("ZIP file downloaded!");
-    })
-    .catch(error => {
-        showNotification("Error downloading ZIP: " + error.message);
-        console.error("Download error:", error);
     });
 }
+function run(){
+    generateWebContent();
+}
 
+function downloadZip() {
+    const link = document.createElement('a');
+    link.href = 'http://localhost:5500/download-zip'; // This is your backend zip endpoint
+    link.download = 'output.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
 // Function to handle the generated content
 function handleGeneratedContent(data) {
     // This function would process the generated content
     // Example: download files, show preview, etc.
     console.log('Generated content:', data);
-    
+
     // Save the current project to recent projects
     //saveCurrentProject();
 }
@@ -635,7 +635,7 @@ const MAX_COLORS = 3;
 function toggleColor(element, colorValue) {
     // Check if element is already selected
     const isSelected = element.classList.contains('selected');
-    
+
     // If it's already selected, just toggle it off
     if (isSelected) {
         element.classList.remove('selected');
@@ -645,13 +645,13 @@ function toggleColor(element, colorValue) {
         }
         return;
     }
-    
+
     // If not selected and we're at the limit, show notification
     if (selectedColors.length >= MAX_COLORS) {
         showNotification(`Maximum ${MAX_COLORS} colors allowed!`);
         return;
     }
-    
+
     // Otherwise, toggle it on
     element.classList.add('selected');
     selectedColors.push(colorValue);
@@ -661,10 +661,10 @@ function toggleColor(element, colorValue) {
 function showNotification(message) {
     const notification = document.getElementById('notification');
     const messageEl = document.getElementById('notification-message');
-    
+
     messageEl.textContent = message;
     notification.classList.add('show');
-    
+
     // Auto-hide after 3 seconds
     setTimeout(() => {
         notification.classList.remove('show');
@@ -685,13 +685,13 @@ function logout() {
 function fetchUserData() {
     // Get token from localStorage
     const token = localStorage.getItem('token');
-    
-    
+
+
     if (!token) {
         window.location.href = 'login.html';
         return;
     }
-    
+
     // Fetch user data from the server
     fetch('http://localhost:5500/api/user-profile', {
         method: 'GET',
@@ -700,21 +700,21 @@ function fetchUserData() {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Update username display
-        document.getElementById('username-display').textContent = data.username || 'User';
-    })
-    .catch(error => {
-        console.error('Error fetching user data:', error);
-        // Redirect to login if there's an error
-        window.location.href = 'login.html';
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update username display
+            document.getElementById('username-display').textContent = data.username || 'User';
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+            // Redirect to login if there's an error
+            window.location.href = 'login.html';
+        });
 }
 document.addEventListener('DOMContentLoaded', fetchUserData);
 
@@ -722,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeNightMode();
     initializeProjectTitle();
     initializeNewProjectButton();
-    
+
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (token) {
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchUserProjects() {
     const token = localStorage.getItem('token');
     console.log('Token:', token ? 'Token exists' : 'No token found');
-    
+
     if (!token) {
         console.log('No token found, user not logged in');
         return [];
@@ -752,7 +752,7 @@ async function fetchUserProjects() {
 
     try {
         console.log('Fetching projects from API...');
-        const response = await fetch('http://localhost:5000/api/user-projects', {
+        const response = await fetch('http://localhost:5500/api/user-projects', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -760,7 +760,7 @@ async function fetchUserProjects() {
         });
 
         console.log('API Response status:', response.status);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API Error:', errorText);
@@ -798,7 +798,7 @@ async function updateProjectsListFromDatabase() {
 
     try {
         const projects = await fetchUserProjects();
-        
+
         if (projects.length === 0) {
             projectsList.innerHTML = `
                 <div class="project-item">
@@ -821,10 +821,10 @@ async function updateProjectsListFromDatabase() {
             const projectElement = document.createElement('div');
             projectElement.className = 'project-item';
             projectElement.onclick = () => loadProjectFromDatabase(project.proj_id);
-            
+
             // Use the formatDate function for consistent date formatting
             const formattedDate = formatDate(project.created_at);
-            
+
             projectElement.innerHTML = `
                 <div class="project-icon">
                     <i class="fas fa-folder"></i>
@@ -834,7 +834,7 @@ async function updateProjectsListFromDatabase() {
                     <div class="project-date">${formattedDate}</div>
                 </div>
             `;
-            
+
             projectsList.appendChild(projectElement);
         });
     } catch (error) {
@@ -862,7 +862,7 @@ async function loadProjectFromDatabase(projectId) {
 
     try {
         console.log('Loading project with ID:', projectId);
-        const response = await fetch(`http://localhost:5000/api/project/${projectId}`, {
+        const response = await fetch(`http://localhost:5500/api/project/${projectId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -926,9 +926,9 @@ async function loadProjectFromDatabase(projectId) {
         // Update file input listeners
         const fileInputs = document.querySelectorAll('.prompt-container .file-input');
         const fileNames = document.querySelectorAll('.prompt-container .file-name');
-        
+
         fileInputs.forEach((input, index) => {
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function () {
                 if (this.files && this.files.length > 0) {
                     fileNames[index].textContent = this.files[0].name;
                 }
@@ -947,7 +947,7 @@ function updateExistingProject() {
         const proj_name = document.getElementById('project-title').value;
         const currentUser = JSON.parse(localStorage.getItem('currentUser')); // Get current user
         const user_id = currentUser ? currentUser.id : null; // Use user ID or null if not logged in
-        
+
         if (!user_id) {
             const error = new Error('No user logged in; cannot update project');
             console.log(error.message);
@@ -955,7 +955,7 @@ function updateExistingProject() {
             reject(error);
             return;
         }
-        
+
         const promptBoxes = document.querySelectorAll('.prompt-box');
         const pages = [];
 
@@ -963,8 +963,8 @@ function updateExistingProject() {
             const title = box.querySelector('.title-input').value;
             const content = box.querySelector('textarea').value;
             const fileName = box.querySelector('.file-name').textContent;
-            pages.push({ 
-                title: title, 
+            pages.push({
+                title: title,
                 content: content,
                 fileName: fileName
             });
@@ -972,7 +972,7 @@ function updateExistingProject() {
 
         // Get the project ID from the currentLoadedProjectData
         const projectId = currentLoadedProjectData.projectId;
-        
+
         if (!projectId) {
             const error = new Error('Project ID not found');
             console.log(error.message);
@@ -981,14 +981,14 @@ function updateExistingProject() {
             return;
         }
 
-        const requestBody = { 
+        const requestBody = {
             proj_id: projectId,
-            proj_name: proj_name, 
-            user_id: user_id, 
-            pages: pages 
+            proj_name: proj_name,
+            user_id: user_id,
+            pages: pages
         };
 
-        fetch('http://localhost:5000/api/update-project', { 
+        fetch('http://localhost:5500/api/update-project', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -996,22 +996,22 @@ function updateExistingProject() {
             },
             body: JSON.stringify(requestBody)
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            showNotification('Project updated successfully!');
-            resolve(data);
-        })
-        .catch((error) => {
-            showNotification('Error updating project: ' + error.message);
-            reject(error);
-        });
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification('Project updated successfully!');
+                resolve(data);
+            })
+            .catch((error) => {
+                showNotification('Error updating project: ' + error.message);
+                reject(error);
+            });
     });
 }
 
@@ -1062,7 +1062,7 @@ function updateRecentProjectsListUI(projects) {
         // Format the date using the same format as loginfirst.html
         const createdDate = project.created_at;
         const formattedDate = createdDate ? formatDate(createdDate) : 'Date not available';
-        
+
         return `
             <div class="recent-project-item flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer" onclick="loadProjectFromDatabase(${project.proj_id})">
                 <div class="flex items-center">
@@ -1086,3 +1086,4 @@ function closePreview() {
     const preview = document.getElementById('previewContainer');
     preview.style.display = 'none';
 }
+

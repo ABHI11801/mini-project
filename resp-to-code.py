@@ -4,6 +4,8 @@ import json
 import os
 import sys
 
+import requests
+
 input_data = json.loads(sys.argv[1])
 generated_code = input_data.get("generatedCode", "")
 match = re.search(r'```json\n(.*?)\n```', generated_code, re.DOTALL)

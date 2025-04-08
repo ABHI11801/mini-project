@@ -136,10 +136,12 @@
                      <div class="prompt-box">
                         <input type="text" class="title-input" placeholder="Enter page title">
                         <textarea placeholder="Enter page content"></textarea>
-                        <label class="file-upload-label">
-                        <input type="file" class="file-input">
-                        <span>Upload File</span>
-                        </label>
+                        <form action="http://localhost:5500/upload" method="POST" enctype="multipart/form-data">
+                           <label class="file-upload-label">
+                             <input type="file" class="file-input" name="file" onchange="this.form.submit()">
+                             <span>Upload File</span>
+                           </label>
+                         </form>
                         <div class="file-name"></div>
                      </div>
                      <div class="add-btn-container">
@@ -147,7 +149,7 @@
                      </div>
                   </div>
                   <div class="buttons">
-                     <button onclick="generateWebContent()">Generate</button>
+                     <button onclick="run()">Generate</button>
                      <button onclick="showPreview()">Preview</button>
                      <button onclick="downloadZip()">Download</button>
                  </div>
